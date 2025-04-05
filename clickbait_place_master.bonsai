@@ -49,7 +49,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:VideoWriter">
-          <cv:FileName>D:\clickbait-place\data\tetrode_ob-hc\video_toggle\0\04022025_video_toggle_0.avi</cv:FileName>
+          <cv:FileName>D:\clickbait-place\data\tetrode_ob-hc\7005\v1\04042025_7005_v1.avi</cv:FileName>
           <cv:Suffix>None</cv:Suffix>
           <cv:Buffered>true</cv:Buffered>
           <cv:Overwrite>false</cv:Overwrite>
@@ -77,7 +77,7 @@
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\video_toggle\0\04022025_video_toggle_0_video_timestamp.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7005\v1\04042025_7005_v1_video_timestamp.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -570,7 +570,7 @@ prev_poke_right = False
 """
 centroid_color = Scalar.Rgb(255, 255, 255)
 mouse_loc_color = Scalar.Rgb(255, 0, 0)
-target_color = Scalar.Rgb(64, 64, 64)
+target_color = Scalar.Rgb(255, 255, 255)
 grid_color = Scalar.Rgb(128, 128, 128)
 centroid_radius = 5
 
@@ -607,8 +607,8 @@ def process(value):
 
     # Timing-related vars
     current_time = time.time()
-    reward_duration_left = 0.051  # 0.046 seconds
-    reward_duration_right = 0.051
+    reward_duration_left = 0.046  # 0.051 was satiating after ~60 trials
+    reward_duration_right = 0.046
     click_duration = 0.1
     iti_duration_min = 1.0
     iti_duration_max = 5.0
@@ -754,19 +754,9 @@ def process(value):
       </Expression>
       <Expression xsi:type="ipy:PythonTransform">
         <ipy:Name>Active Target</ipy:Name>
-        <ipy:Script>#returns(str)
-@returns(int)
+        <ipy:Script>@returns(str)
 def process(value):
-#  target_list = "["
-#  targets = value[10]
-#  for ii in range(len(targets)):
-#    target_list += str(targets[ii])
-#    if ii &lt; len(targets) - 1:
-#      target_list += ","
-
-#  target_list += "]" 
-#  return target_list
-  return 0#value[10]</ipy:Script>
+  return str(value[10])</ipy:Script>
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="rx:Zip" />
@@ -780,7 +770,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\video_toggle\0\04022025_video_toggle_0_eventsA.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7005\v1\04042025_7005_v1_eventsA.csv</io:FileName>
         <io:Delimiter>,</io:Delimiter>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
@@ -904,7 +894,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="io:WriteAllText">
-          <io:Path>D:\clickbait-place\data\tetrode_ob-hc\video_toggle\0\04022025_video_toggle_0_trialcounts.txt</io:Path>
+          <io:Path>D:\clickbait-place\data\tetrode_ob-hc\7005\v1\04042025_7005_v1_trialcounts.txt</io:Path>
           <io:Overwrite>true</io:Overwrite>
           <io:Append>false</io:Append>
         </Combinator>
@@ -921,7 +911,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\video_toggle\0\04022025_video_toggle_0_eventsB.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7005\v1\04042025_7005_v1_eventsB.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -1019,7 +1009,7 @@ def process(value):
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="IntProperty">
-                <Value>0</Value>
+                <Value>2</Value>
               </Combinator>
             </Expression>
             <Expression xsi:type="Mod">
@@ -1031,12 +1021,25 @@ def process(value):
               <Name>Session Number</Name>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="rx:Zip" />
+              <Combinator xsi:type="rx:WithLatestFrom" />
             </Expression>
             <Expression xsi:type="ipy:PythonTransform">
               <ipy:Script>@returns(float)
 def process(value):
-    return 1.5 * (-1 if value.Item1 else 1) * (-1 if int(value.Item2) % 2 == 0 else 1)</ipy:Script>
+    time_period = value.Item1
+    session_num = int(value.Item2[1:])
+
+    if session_num % 2 == 0:
+      if time_period == 0:
+        return 1.5
+      else:
+        return -1.5
+
+    else:
+      if time_period == 0:
+        return -1.5
+      else:
+        return 1.5</ipy:Script>
             </Expression>
             <Expression xsi:type="PropertyMapping">
               <PropertyMappings>
@@ -1445,7 +1448,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>04032025</Value>
+          <Value>04052025</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1469,7 +1472,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>7001</Value>
+          <Value>7005</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1481,7 +1484,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>0</Value>
+          <Value>v2</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
