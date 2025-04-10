@@ -49,7 +49,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:VideoWriter">
-          <cv:FileName>D:\clickbait-place\data\tetrode_ob-hc\7005\v1\04042025_7005_v1.avi</cv:FileName>
+          <cv:FileName>D:\clickbait-place\data\tetrode_ob-hc\7001\v6\04092025_7001_v6.avi</cv:FileName>
           <cv:Suffix>None</cv:Suffix>
           <cv:Buffered>true</cv:Buffered>
           <cv:Overwrite>false</cv:Overwrite>
@@ -77,7 +77,7 @@
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7005\v1\04042025_7005_v1_video_timestamp.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7001\v6\04092025_7001_v6_video_timestamp.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -137,7 +137,7 @@ def process(value):
     countdown = str("Time remaining: " + format_string.format(minutes=minutes, seconds=seconds))
 
     if minutes &lt;= 0 and seconds &lt;= 0:
-        focus_window("clickbait_place_master.bonsai")
+        focus_window("clickbait_place_master.bonsai - Bonsai")
         countdown = "Time's up!"
         SendKeys.SendWait("+{F5}")
 
@@ -215,7 +215,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="LessThan">
         <Operand xsi:type="IntProperty">
-          <Value>20</Value>
+          <Value>40</Value>
         </Operand>
       </Expression>
       <Expression xsi:type="rx:AsyncSubject">
@@ -229,7 +229,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="LessThan">
         <Operand xsi:type="IntProperty">
-          <Value>20</Value>
+          <Value>30</Value>
         </Operand>
       </Expression>
       <Expression xsi:type="rx:AsyncSubject">
@@ -539,7 +539,7 @@ global reward_right_start_time
 trial_count = 0
 reward_left_count = 0
 reward_right_count = 0
-reward_state = False
+reward_state = True
 click = False
 click_start_time = 0
 drinking = False
@@ -607,8 +607,8 @@ def process(value):
 
     # Timing-related vars
     current_time = time.time()
-    reward_duration_left = 0.046  # 0.051 was satiating after ~60 trials
-    reward_duration_right = 0.046
+    reward_duration_left = 0.041 #0.046  # 0.051 was satiating after ~60 trials
+    reward_duration_right = 0.041 #0.046
     click_duration = 0.1
     iti_duration_min = 1.0
     iti_duration_max = 5.0
@@ -770,7 +770,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7005\v1\04042025_7005_v1_eventsA.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7001\v6\04092025_7001_v6_eventsA.csv</io:FileName>
         <io:Delimiter>,</io:Delimiter>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
@@ -894,7 +894,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="io:WriteAllText">
-          <io:Path>D:\clickbait-place\data\tetrode_ob-hc\7005\v1\04042025_7005_v1_trialcounts.txt</io:Path>
+          <io:Path>D:\clickbait-place\data\tetrode_ob-hc\7001\v6\04092025_7001_v6_trialcounts.txt</io:Path>
           <io:Overwrite>true</io:Overwrite>
           <io:Append>false</io:Append>
         </Combinator>
@@ -911,7 +911,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7005\v1\04042025_7005_v1_eventsB.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7001\v6\04092025_7001_v6_eventsB.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -1053,7 +1053,7 @@ def process(value):
               <Angle>0</Angle>
               <ExtentX>2.96</ExtentX>
               <ExtentY>2</ExtentY>
-              <LocationX>-1.5</LocationX>
+              <LocationX>1.5</LocationX>
               <LocationY>0</LocationY>
               <ScaleX>1</ScaleX>
               <ScaleY>1</ScaleY>
@@ -1448,7 +1448,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>04052025</Value>
+          <Value>04092025</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1472,7 +1472,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>7005</Value>
+          <Value>7002</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1484,7 +1484,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>v2</Value>
+          <Value>v6</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
