@@ -8,8 +8,8 @@
                  xmlns:io="clr-namespace:Bonsai.IO;assembly=Bonsai.System"
                  xmlns:ipy="clr-namespace:Bonsai.Scripting.IronPython;assembly=Bonsai.Scripting.IronPython"
                  xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
-                 xmlns:res="clr-namespace:Bonsai.Resources;assembly=Bonsai.System"
                  xmlns:sys="clr-namespace:System;assembly=mscorlib"
+                 xmlns:res="clr-namespace:Bonsai.Resources;assembly=Bonsai.System"
                  xmlns="https://bonsai-rx.org/2018/workflow">
   <Workflow>
     <Nodes>
@@ -49,7 +49,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:VideoWriter">
-          <cv:FileName>D:\clickbait-place\data\tetrode_ob-hc\7001\f1\04272025_7001_f1.avi</cv:FileName>
+          <cv:FileName>D:\clickbait-place\data\tetrode_ob-hc\7001\a11\05012025_7001_a11.avi</cv:FileName>
           <cv:Suffix>None</cv:Suffix>
           <cv:Buffered>true</cv:Buffered>
           <cv:Overwrite>false</cv:Overwrite>
@@ -77,7 +77,7 @@
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7001\f1\04272025_7001_f1_video_timestamp.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7001\a11\05012025_7001_a11_video_timestamp.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -137,7 +137,7 @@ def process(value):
     countdown = str("Time remaining: " + format_string.format(minutes=minutes, seconds=seconds))
 
     if minutes &lt;= 0 and seconds &lt;= 0:
-        focus_window("clickbait_place_flipper")
+        focus_window("clickbait_anemo")
         countdown = "Time's up!"
         SendKeys.SendWait("+{F5}")
 
@@ -155,7 +155,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:Threshold">
-          <cv:ThresholdValue>56</cv:ThresholdValue>
+          <cv:ThresholdValue>64</cv:ThresholdValue>
           <cv:MaxValue>255</cv:MaxValue>
           <cv:ThresholdType>Binary</cv:ThresholdType>
         </Combinator>
@@ -770,7 +770,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7001\f1\04272025_7001_f1_eventsA.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7001\a11\05012025_7001_a11_eventsA.csv</io:FileName>
         <io:Delimiter>,</io:Delimiter>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
@@ -894,7 +894,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="io:WriteAllText">
-          <io:Path>D:\clickbait-place\data\tetrode_ob-hc\7001\f1\04272025_7001_f1_trialcounts.txt</io:Path>
+          <io:Path>D:\clickbait-place\data\tetrode_ob-hc\7001\a11\05012025_7001_a11_trialcounts.txt</io:Path>
           <io:Overwrite>true</io:Overwrite>
           <io:Append>false</io:Append>
         </Combinator>
@@ -911,11 +911,100 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7001\f1\04272025_7001_f1_eventsB.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7001\a11\05012025_7001_a11_eventsB.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
         <io:IncludeHeader>true</io:IncludeHeader>
+      </Expression>
+      <Expression xsi:type="GroupWorkflow">
+        <Name>Air Flip</Name>
+        <Description />
+        <Workflow>
+          <Nodes>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="gl:Timer">
+                <gl:DueTime>PT0S</gl:DueTime>
+                <gl:Period>PT30M</gl:Period>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Mod">
+              <Operand xsi:type="WorkflowProperty" TypeArguments="sys:Int64">
+                <Value>2</Value>
+              </Operand>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>Session Number</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:WithLatestFrom" />
+            </Expression>
+            <Expression xsi:type="ipy:PythonTransform">
+              <ipy:Script>@returns(tuple)
+def process(value):
+    time_period = value.Item1
+    session_num = int(value.Item2[1:])
+
+    if session_num % 2 == 0:
+      if time_period == 0:
+        return (True, False)
+      else:
+        return (False, True)
+
+    else:
+      if time_period == 0:
+        return (False, True)
+      else:
+        return (True, False)</ipy:Script>
+            </Expression>
+            <Expression xsi:type="ipy:PythonTransform">
+              <ipy:Name>Left Air</ipy:Name>
+              <ipy:Script>@returns(bool)
+def process(value):
+  return value[0]</ipy:Script>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="ard:DigitalOutput">
+                <ard:PortName>Arduino Mega 2560</ard:PortName>
+                <ard:Pin>44</ard:Pin>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="ipy:PythonTransform">
+              <ipy:Name>Right Air</ipy:Name>
+              <ipy:Script>@returns(bool)
+def process(value):
+  return value[1]</ipy:Script>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="ard:DigitalOutput">
+                <ard:PortName>Arduino Mega 2560</ard:PortName>
+                <ard:Pin>42</ard:Pin>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="IntProperty">
+                <Value>128</Value>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="ard:AnalogOutput">
+                <ard:PortName>Arduino Mega 2560</ard:PortName>
+                <ard:Pin>3</ard:Pin>
+              </Combinator>
+            </Expression>
+          </Nodes>
+          <Edges>
+            <Edge From="0" To="1" Label="Source1" />
+            <Edge From="1" To="3" Label="Source1" />
+            <Edge From="2" To="3" Label="Source2" />
+            <Edge From="3" To="4" Label="Source1" />
+            <Edge From="4" To="5" Label="Source1" />
+            <Edge From="4" To="7" Label="Source1" />
+            <Edge From="5" To="6" Label="Source1" />
+            <Edge From="7" To="8" Label="Source1" />
+            <Edge From="9" To="10" Label="Source1" />
+          </Edges>
+        </Workflow>
       </Expression>
       <Expression xsi:type="GroupWorkflow">
         <Name>Monitor Flip</Name>
@@ -980,6 +1069,21 @@ def process(value):
                     <gl:StartPosition>0</gl:StartPosition>
                     <gl:BufferLength xsi:nil="true" />
                   </gl:TextureConfiguration>
+                  <gl:TextureConfiguration xsi:type="gl:VideoTexture">
+                    <gl:Name>blank_screen</gl:Name>
+                    <gl:Width>1280</gl:Width>
+                    <gl:Height>1920</gl:Height>
+                    <gl:InternalFormat>Rgba</gl:InternalFormat>
+                    <gl:WrapS>Repeat</gl:WrapS>
+                    <gl:WrapT>Repeat</gl:WrapT>
+                    <gl:MinFilter>Linear</gl:MinFilter>
+                    <gl:MagFilter>Linear</gl:MagFilter>
+                    <gl:FileName>stimuli\blank.mp4</gl:FileName>
+                    <gl:FlipMode>Vertical</gl:FlipMode>
+                    <gl:FrameCount xsi:nil="true" />
+                    <gl:StartPosition>0</gl:StartPosition>
+                    <gl:BufferLength xsi:nil="true" />
+                  </gl:TextureConfiguration>
                 </gl:Textures>
               </Combinator>
             </Expression>
@@ -1009,7 +1113,7 @@ def process(value):
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="IntProperty">
-                <Value>6</Value>
+                <Value>11</Value>
               </Combinator>
             </Expression>
             <Expression xsi:type="Mod">
@@ -1047,13 +1151,13 @@ def process(value):
               </PropertyMappings>
             </Expression>
             <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawVideo.bonsai">
-              <TextureName>stimulus_monitor_2</TextureName>
+              <TextureName>blank_screen</TextureName>
               <PlaybackRate>0</PlaybackRate>
               <Loop>true</Loop>
               <Angle>0</Angle>
               <ExtentX>2.96</ExtentX>
               <ExtentY>2</ExtentY>
-              <LocationX>-1.5</LocationX>
+              <LocationX>1.5</LocationX>
               <LocationY>0</LocationY>
               <ScaleX>1</ScaleX>
               <ScaleY>1</ScaleY>
@@ -1448,7 +1552,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>04272025</Value>
+          <Value>05012025</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1460,7 +1564,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="FloatProperty">
-          <Value>30</Value>
+          <Value>60</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1484,7 +1588,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>f1</Value>
+          <Value>a11</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1633,27 +1737,27 @@ def generate():
       <Edge From="68" To="71" Label="Source1" />
       <Edge From="69" To="70" Label="Source1" />
       <Edge From="70" To="71" Label="Source2" />
-      <Edge From="74" To="75" Label="Source1" />
       <Edge From="75" To="76" Label="Source1" />
-      <Edge From="77" To="78" Label="Source1" />
+      <Edge From="76" To="77" Label="Source1" />
       <Edge From="78" To="79" Label="Source1" />
-      <Edge From="80" To="81" Label="Source1" />
+      <Edge From="79" To="80" Label="Source1" />
       <Edge From="81" To="82" Label="Source1" />
-      <Edge From="83" To="84" Label="Source1" />
+      <Edge From="82" To="83" Label="Source1" />
       <Edge From="84" To="85" Label="Source1" />
-      <Edge From="86" To="87" Label="Source1" />
+      <Edge From="85" To="86" Label="Source1" />
       <Edge From="87" To="88" Label="Source1" />
-      <Edge From="89" To="90" Label="Source1" />
-      <Edge From="90" To="98" Label="Source1" />
-      <Edge From="91" To="98" Label="Source2" />
-      <Edge From="92" To="98" Label="Source3" />
-      <Edge From="93" To="98" Label="Source4" />
-      <Edge From="94" To="98" Label="Source5" />
-      <Edge From="95" To="98" Label="Source6" />
-      <Edge From="96" To="98" Label="Source7" />
-      <Edge From="97" To="98" Label="Source8" />
-      <Edge From="98" To="99" Label="Source1" />
+      <Edge From="88" To="89" Label="Source1" />
+      <Edge From="90" To="91" Label="Source1" />
+      <Edge From="91" To="99" Label="Source1" />
+      <Edge From="92" To="99" Label="Source2" />
+      <Edge From="93" To="99" Label="Source3" />
+      <Edge From="94" To="99" Label="Source4" />
+      <Edge From="95" To="99" Label="Source5" />
+      <Edge From="96" To="99" Label="Source6" />
+      <Edge From="97" To="99" Label="Source7" />
+      <Edge From="98" To="99" Label="Source8" />
       <Edge From="99" To="100" Label="Source1" />
+      <Edge From="100" To="101" Label="Source1" />
     </Edges>
   </Workflow>
 </WorkflowBuilder>
