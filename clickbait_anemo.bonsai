@@ -49,7 +49,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:VideoWriter">
-          <cv:FileName>D:\clickbait-place\data\tetrode_ob-hc\7001\a11\05012025_7001_a11.avi</cv:FileName>
+          <cv:FileName>D:\clickbait-place\data\tetrode_ob-hc\7002\a2\05032025_7002_a2.avi</cv:FileName>
           <cv:Suffix>None</cv:Suffix>
           <cv:Buffered>true</cv:Buffered>
           <cv:Overwrite>false</cv:Overwrite>
@@ -77,7 +77,7 @@
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7001\a11\05012025_7001_a11_video_timestamp.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7002\a2\05032025_7002_a2_video_timestamp.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -155,7 +155,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:Threshold">
-          <cv:ThresholdValue>64</cv:ThresholdValue>
+          <cv:ThresholdValue>60</cv:ThresholdValue>
           <cv:MaxValue>255</cv:MaxValue>
           <cv:ThresholdType>Binary</cv:ThresholdType>
         </Combinator>
@@ -770,7 +770,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7001\a11\05012025_7001_a11_eventsA.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7002\a2\05032025_7002_a2_eventsA.csv</io:FileName>
         <io:Delimiter>,</io:Delimiter>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
@@ -894,7 +894,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="io:WriteAllText">
-          <io:Path>D:\clickbait-place\data\tetrode_ob-hc\7001\a11\05012025_7001_a11_trialcounts.txt</io:Path>
+          <io:Path>D:\clickbait-place\data\tetrode_ob-hc\7002\a2\05032025_7002_a2_trialcounts.txt</io:Path>
           <io:Overwrite>true</io:Overwrite>
           <io:Append>false</io:Append>
         </Combinator>
@@ -911,7 +911,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7001\a11\05012025_7001_a11_eventsB.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7002\a2\05032025_7002_a2_eventsB.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -1016,7 +1016,7 @@ def process(value):
                 <gl:Height>1280</gl:Height>
                 <gl:VSync>On</gl:VSync>
                 <gl:SwapSync>false</gl:SwapSync>
-                <gl:ClearColor>Black</gl:ClearColor>
+                <gl:ClearColor>White</gl:ClearColor>
                 <gl:ClearMask>DepthBufferBit ColorBufferBit</gl:ClearMask>
                 <gl:CursorVisible>true</gl:CursorVisible>
                 <gl:Location>
@@ -1097,8 +1097,10 @@ def process(value):
             <Expression xsi:type="rx:PublishSubject">
               <Name>Draw</Name>
             </Expression>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>Draw</Name>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="SubscribeSubject">
+                <Name>Draw</Name>
+              </Builder>
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="gl:Timer">
@@ -1113,7 +1115,7 @@ def process(value):
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="IntProperty">
-                <Value>11</Value>
+                <Value>12</Value>
               </Combinator>
             </Expression>
             <Expression xsi:type="Mod">
@@ -1150,20 +1152,22 @@ def process(value):
                 <Property Name="LocationX" />
               </PropertyMappings>
             </Expression>
-            <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawVideo.bonsai">
-              <TextureName>blank_screen</TextureName>
-              <PlaybackRate>0</PlaybackRate>
-              <Loop>true</Loop>
-              <Angle>0</Angle>
-              <ExtentX>2.96</ExtentX>
-              <ExtentY>2</ExtentY>
-              <LocationX>1.5</LocationX>
-              <LocationY>0</LocationY>
-              <ScaleX>1</ScaleX>
-              <ScaleY>1</ScaleY>
-              <ShiftX>0</ShiftX>
-              <ShiftY>0</ShiftY>
-              <Layer>0</Layer>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawVideo.bonsai">
+                <TextureName>blank_screen</TextureName>
+                <PlaybackRate>0</PlaybackRate>
+                <Loop>true</Loop>
+                <Angle>0</Angle>
+                <ExtentX>2.96</ExtentX>
+                <ExtentY>2</ExtentY>
+                <LocationX>1.5</LocationX>
+                <LocationY>0</LocationY>
+                <ScaleX>1</ScaleX>
+                <ScaleY>1</ScaleY>
+                <ShiftX>0</ShiftX>
+                <ShiftY>0</ShiftY>
+                <Layer>0</Layer>
+              </Builder>
             </Expression>
           </Nodes>
           <Edges>
@@ -1552,7 +1556,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>05012025</Value>
+          <Value>05042025</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1576,7 +1580,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>7002</Value>
+          <Value>7001</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1588,7 +1592,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>a11</Value>
+          <Value>a3</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
