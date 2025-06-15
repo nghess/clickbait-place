@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.8.5"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xmlns:ard="clr-namespace:Bonsai.Arduino;assembly=Bonsai.Arduino"
+                 xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
+                 xmlns:sys="clr-namespace:System;assembly=mscorlib"
+                 xmlns:ipy="clr-namespace:Bonsai.Scripting.IronPython;assembly=Bonsai.Scripting.IronPython"
+                 xmlns="https://bonsai-rx.org/2018/workflow">
+  <Workflow>
+    <Nodes>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="ard:CreateArduino">
+          <ard:Name>Arduino Mega 2560</ard:Name>
+          <ard:PortName>COM3</ard:PortName>
+          <ard:BaudRate>57600</ard:BaudRate>
+          <ard:SamplingInterval>19</ard:SamplingInterval>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="gl:Timer">
+          <gl:DueTime>PT0S</gl:DueTime>
+          <gl:Period>PT3S</gl:Period>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Mod">
+        <Operand xsi:type="WorkflowProperty" TypeArguments="sys:Int64">
+          <Value>2</Value>
+        </Operand>
+      </Expression>
+      <Expression xsi:type="ipy:PythonTransform">
+        <ipy:Script>@returns(bool)
+def process(value):
+    if value == 0:
+      return True
+    else:
+      return False
+</ipy:Script>
+      </Expression>
+      <Expression xsi:type="ipy:PythonTransform">
+        <ipy:Name>Left Air</ipy:Name>
+        <ipy:Script>@returns(bool)
+def process(value):
+  if value:
+    return False</ipy:Script>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="ard:DigitalOutput">
+          <ard:PortName>Arduino Mega 2560</ard:PortName>
+          <ard:Pin>48</ard:Pin>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="ipy:PythonTransform">
+        <ipy:Name>Right Air</ipy:Name>
+        <ipy:Script>@returns(bool)
+def process(value):
+  if value:
+    return True</ipy:Script>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="ard:DigitalOutput">
+          <ard:PortName>Arduino Mega 2560</ard:PortName>
+          <ard:Pin>49</ard:Pin>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="IntProperty">
+          <Value>128</Value>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="ard:AnalogOutput">
+          <ard:PortName>Arduino Mega 2560</ard:PortName>
+          <ard:Pin>3</ard:Pin>
+        </Combinator>
+      </Expression>
+    </Nodes>
+    <Edges>
+      <Edge From="1" To="2" Label="Source1" />
+      <Edge From="2" To="3" Label="Source1" />
+      <Edge From="3" To="4" Label="Source1" />
+      <Edge From="3" To="6" Label="Source1" />
+      <Edge From="4" To="5" Label="Source1" />
+      <Edge From="6" To="7" Label="Source1" />
+      <Edge From="8" To="9" Label="Source1" />
+    </Edges>
+  </Workflow>
+</WorkflowBuilder>

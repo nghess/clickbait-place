@@ -1460,7 +1460,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="FloatProperty">
-          <Value>60</Value>
+          <Value>30</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1472,7 +1472,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>7002</Value>
+          <Value>7004_presentation</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1484,7 +1484,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>v12</Value>
+          <Value>p1</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
