@@ -11,7 +11,7 @@ from System import Array
 # Enhanced 2D distribution generator for IronPython
 def generate_2d_distribution(x_size, y_size, mean_x=None, mean_y=None, 
                            sigma_x=None, sigma_y=None, log_normal=False,
-                           log_sigma_x=0.5, log_sigma_y=0.5):
+                           log_sigma_x=0.5, log_sigma_y=0.5, flip_log_y=False):
     """
     Generate a 2D normal or log-normal distribution for IronPython.
     
@@ -39,6 +39,8 @@ def generate_2d_distribution(x_size, y_size, mean_x=None, mean_y=None,
         Standard deviation in log-space for x-axis log-normal (default: 0.5)
     log_sigma_y : float
         Standard deviation in log-space for y-axis log-normal (default: 0.5)
+    flip_log_y : bool
+        If True and log_normal includes 'y', flips the y-axis log-normal distribution
         
     Returns:
     --------
@@ -89,7 +91,12 @@ def generate_2d_distribution(x_size, y_size, mean_x=None, mean_y=None,
             if log_y:
                 # Log-normal for Y axis
                 log_mean_y = math.log(max(mean_y, 1e-10))
-                y_pos = max(y + 1, 1e-10)  # Add 1 to avoid log(0), ensure positive
+                if flip_log_y:
+                    # Flip the log-normal by using (y_size - y - 1) instead of y
+                    y_flipped = y_size - y - 1
+                    y_pos = max(y_flipped + 1, 1e-10)
+                else:
+                    y_pos = max(y + 1, 1e-10)  # Add 1 to avoid log(0), ensure positive
                 z_y = math.exp(-((math.log(y_pos) - log_mean_y)**2 / (2 * log_sigma_y**2)))
             else:
                 # Normal for Y axis
@@ -135,7 +142,7 @@ def get_image_shape(img):
 # Enhanced target generation function
 def generate_targets(grid_cells_x, grid_cells_y, max_targets_per_cell=5, shuffle=True,
                     mean_x=None, mean_y=None, sigma_x=None, sigma_y=None, 
-                    log_normal=False, log_sigma_x=0.5, log_sigma_y=0.5):
+                    log_normal=False, log_sigma_x=0.5, log_sigma_y=0.5, flip_log_y=False):
     """
     Generate targets with enhanced distribution control.
     
@@ -177,7 +184,7 @@ def generate_targets(grid_cells_x, grid_cells_y, max_targets_per_cell=5, shuffle
     # Generate the 2D distribution
     base_distribution = generate_2d_distribution(
         inner_x, inner_y, mean_x, mean_y, sigma_x, sigma_y,
-        log_normal, log_sigma_x, log_sigma_y
+        log_normal, log_sigma_x, log_sigma_y, flip_log_y
     )
     
     # Find max probability for scaling
@@ -189,7 +196,7 @@ def generate_targets(grid_cells_x, grid_cells_y, max_targets_per_cell=5, shuffle
     
     for i, prob in enumerate(base_distribution):
         # Scale to [1, max_targets_per_cell] range
-        scaled_targets = 1 + int((prob / max_prob) * (max_targets_per_cell - 1))
+        scaled_targets = 0 + int((prob / max_prob) * (max_targets_per_cell - 1))
         target_counts[i] = scaled_targets
         total_targets += scaled_targets
     
@@ -215,6 +222,14 @@ def generate_targets(grid_cells_x, grid_cells_y, max_targets_per_cell=5, shuffle
     max_initial_count = max_targets_per_cell
     
     return grid_cells_x, grid_cells_y, target_queue, base_distribution, active_target
+
+# Function to get current distribution config based on flip state
+def get_current_distribution_config():
+    """Return the appropriate distribution config based on current flip_state."""
+    if flip_state == 0:
+        return DISTRIBUTION_CONFIG_STATE_0
+    else:
+        return DISTRIBUTION_CONFIG_STATE_1
 
 # Visualization functions (unchanged from your original)
 def draw_target_distribution(target_distribution, grid, img, max_intensity=255):
@@ -317,11 +332,17 @@ grid_x = 7
 grid_y = 15
 max_targets_per_cell = 5
 
-# Probability distribution parameters
-DISTRIBUTION_CONFIG = {
+# Flip state parameters
+FLIP_STATE_CONFIG = {
+    'min_trials_before_flip': 5,    # Minimum trials before state flip
+    'max_trials_before_flip': 10,   # Maximum trials before state flip
+}
+
+# Distribution configurations for each flip state
+DISTRIBUTION_CONFIG_STATE_0 = {
     # Mean position (None = center)
     'mean_x': None,  # Try: 2.0 for left-shifted, 4.0 for right-shifted
-    'mean_y': 3, 
+    'mean_y': 3,     # Top-focused
     
     # Standard deviations for normal distribution
     'sigma_x': None,  # Try: 1.0 for narrow, 3.0 for wide
@@ -332,7 +353,22 @@ DISTRIBUTION_CONFIG = {
     
     # Log-space standard deviations (for log-normal axes)
     'log_sigma_x': 0.5,  # 0.2-0.4: tight, 0.5: moderate, 0.8-1.2: fat tails
-    'log_sigma_y': 0.7,  # 0.2-0.4: tight, 0.5: moderate, 0.8-1.2: fat tails
+    'log_sigma_y': 0.25,  # 0.2-0.4: tight, 0.5: moderate, 0.8-1.2: fat tails
+    'flip_log_y': False,  # Normal log-normal for state 0
+}
+
+DISTRIBUTION_CONFIG_STATE_1 = {
+    # Perfect mirror: bottom-focused distribution using flipped log-normal
+    'mean_x': None,  # Keep centered
+    'mean_y': 3,     # Same mean position as state 0
+    
+    'sigma_x': None,
+    'sigma_y': None,
+    
+    'log_normal': 'y',
+    'log_sigma_x': 0.5,
+    'log_sigma_y': 0.25,   # Same parameters as state 0
+    'flip_log_y': True,   # Flip the log-normal distribution
 }
 
 # Initialize global variables
@@ -343,15 +379,27 @@ global grid_cells_x
 global grid_cells_y
 global initial_cell_counts
 global max_initial_count
+global flip_state
+global trials_since_last_flip
+global trials_until_next_flip
 
 grid_cells_x = grid_x
 grid_cells_y = grid_y
 initial_cell_counts = {}
 max_initial_count = 1
 
-# Initialize target landscape with enhanced distribution
+# Initialize flip state variables
+flip_state = 0
+trials_since_last_flip = 0
+trials_until_next_flip = random.randint(
+    FLIP_STATE_CONFIG['min_trials_before_flip'],
+    FLIP_STATE_CONFIG['max_trials_before_flip']
+)
+
+# Initialize target landscape with enhanced distribution (state 0)
+current_config = get_current_distribution_config()
 _, _, target_queue, target_distribution, active_target = generate_targets(
-    grid_cells_x, grid_cells_y, max_targets_per_cell, **DISTRIBUTION_CONFIG
+    grid_cells_x, grid_cells_y, max_targets_per_cell, **current_config
 )
 
 # Initialize other global variables (unchanged from your original)
@@ -414,6 +462,9 @@ def process(value):
     global prev_poke_right
     global grid_cells_x
     global grid_cells_y
+    global flip_state
+    global trials_since_last_flip
+    global trials_until_next_flip
 
     # Timing-related vars
     current_time = time.time()
@@ -426,6 +477,8 @@ def process(value):
     
     # Flag to track if target was found in this frame
     target_found_this_frame = False
+    # Flag to track if we just completed a trial
+    trial_completed_this_frame = False
 
     # Load realtime variables from Zip node
     centroid_x, centroid_y, image = value[0].Item1, value[0].Item2, value[0].Item3
@@ -459,12 +512,30 @@ def process(value):
     if in_iti:
         if current_time - iti_start_time >= iti_duration:
             trial_count += 1
+            trials_since_last_flip += 1
+            trial_completed_this_frame = True
             in_iti = False
             
-            # Set next target if we need to (only if active target is None)
-            if active_target is None and target_queue:
-                active_target = target_queue[0]
-                target_queue = target_queue[1:]
+            # Check if we need to flip state
+            if trials_since_last_flip >= trials_until_next_flip:
+                # Flip the state
+                flip_state = 1 - flip_state  # Toggle between 0 and 1
+                trials_since_last_flip = 0
+                trials_until_next_flip = random.randint(
+                    FLIP_STATE_CONFIG['min_trials_before_flip'],
+                    FLIP_STATE_CONFIG['max_trials_before_flip']
+                )
+                
+                # Generate new targets with the new distribution
+                current_config = get_current_distribution_config()
+                _, _, target_queue, target_distribution, active_target = generate_targets(
+                    grid_cells_x, grid_cells_y, max_targets_per_cell, **current_config
+                )
+            else:
+                # Set next target if we need to (only if active target is None)
+                if active_target is None and target_queue:
+                    active_target = target_queue[0]
+                    target_queue = target_queue[1:]
             
     elif in_withdrawal_period:
         if not (poke_left or poke_right):  # Mouse has withdrawn
@@ -507,7 +578,7 @@ def process(value):
     # Convert target_queue to tuple for return
     queue_tuple = tuple(target_queue) if target_queue else tuple()
     
-    # Return values
+    # Return values (added flip_state at the end)
     return (canvas, Point(centroid_x, centroid_y), reward_state, reward_left, reward_right, 
             poke_left, poke_right, drinking, in_iti, click, active_target, 
-            trial_count, reward_left_count, reward_right_count, tuple(target_distribution))
+            trial_count, reward_left_count, reward_right_count, tuple(target_distribution), flip_state)
