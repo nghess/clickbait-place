@@ -474,7 +474,7 @@ max_targets_per_cell = 5
 
 # Flip state parameters
 FLIP_STATE_CONFIG = {
-    'min_trials_before_flip': 5,    # Minimum trials before state flip
+    'min_trials_before_flip': 4,    # Minimum trials before state flip
     'max_trials_before_flip': 10,   # Maximum trials before state flip
 }
 
@@ -493,7 +493,7 @@ DISTRIBUTION_CONFIG_STATE_0 = {
     
     # Log-space standard deviations (for log-normal axes)
     'log_sigma_x': 0.5,  # 0.2-0.4: tight, 0.5: moderate, 0.8-1.2: fat tails
-    'log_sigma_y': 0.9,  # 0.2-0.4: tight, 0.5: moderate, 0.8-1.2: fat tails
+    'log_sigma_y': 0.7,  # 0.2-0.4: tight, 0.5: moderate, 0.8-1.2: fat tails
     'flip_log_y': False,  # Normal log-normal for state 0
 }
 
@@ -507,7 +507,7 @@ DISTRIBUTION_CONFIG_STATE_1 = {
     
     'log_normal': 'y',
     'log_sigma_x': 0.5,
-    'log_sigma_y': 0.9,   # Same parameters as state 0
+    'log_sigma_y': 0.7,   # Same parameters as state 0
     'flip_log_y': True,   # Flip the log-normal distribution
 }
 
@@ -611,8 +611,8 @@ def process(value):
     reward_duration_left = 0.032
     reward_duration_right = 0.032
     click_duration = 0.1
-    iti_duration_min = 0.0
-    iti_duration_max = 0.0
+    iti_duration_min = 1.0
+    iti_duration_max = 3.0
     withdrawal_duration = 0.5
     
     # Flag to track if target was found in this frame
@@ -756,7 +756,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:VideoWriter">
-          <cv:FileName>D:\clickbait-place\data\tetrode_ob-hc\motivate3\04\05252025_motivate3_04.avi</cv:FileName>
+          <cv:FileName>D:\clickbait-place\data\tetrode_ob-hc\7004\m4\062425_7004_m4.avi</cv:FileName>
           <cv:Suffix>None</cv:Suffix>
           <cv:Buffered>true</cv:Buffered>
           <cv:Overwrite>false</cv:Overwrite>
@@ -784,7 +784,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\motivate3\04\05252025_motivate3_04_video_timestamp.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7004\m4\062425_7004_m4_video_timestamp.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -906,7 +906,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\motivate3\04\05252025_motivate3_04_eventsA.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7004\m4\062425_7004_m4_eventsA.csv</io:FileName>
         <io:Delimiter>,</io:Delimiter>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
@@ -1030,10 +1030,13 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="io:WriteAllText">
-          <io:Path>D:\clickbait-place\data\tetrode_ob-hc\motivate3\04\05252025_motivate3_04_trialcounts.txt</io:Path>
+          <io:Path>D:\clickbait-place\data\tetrode_ob-hc\7004\m4\062425_7004_m4_trialcounts.txt</io:Path>
           <io:Overwrite>true</io:Overwrite>
           <io:Append>false</io:Append>
         </Combinator>
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>Flip State</Name>
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="rx:Zip" />
@@ -1047,7 +1050,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\motivate3\04\05252025_motivate3_04_eventsB.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\7004\m4\062425_7004_m4_eventsB.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -1249,19 +1252,10 @@ def process(value):
               <ipy:Script>@returns(float)
 def process(value):
     flip_state = value.Item1
-    session_num = int(value.Item2[1:])
-
-    if session_num % 2 == 0:
-      if flip_state == 1:
-        return 1.5
-      else:
-        return -1.5
-
+    if flip_state == 1:
+      return -1.5
     else:
-      if flip_state == 1:
-        return -1.5
-      else:
-        return 1.5</ipy:Script>
+      return 1.5</ipy:Script>
             </Expression>
             <Expression xsi:type="PropertyMapping">
               <PropertyMappings>
@@ -1711,7 +1705,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>061625</Value>
+          <Value>062425</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1735,7 +1729,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>7001</Value>
+          <Value>7004</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1747,7 +1741,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>m1</Value>
+          <Value>m4</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1879,46 +1873,47 @@ def generate():
       <Edge From="49" To="50" Label="Source1" />
       <Edge From="50" To="51" Label="Source2" />
       <Edge From="52" To="53" Label="Source1" />
-      <Edge From="52" To="70" Label="Source1" />
+      <Edge From="52" To="71" Label="Source1" />
       <Edge From="54" To="55" Label="Source1" />
       <Edge From="54" To="56" Label="Source1" />
-      <Edge From="54" To="70" Label="Source2" />
+      <Edge From="54" To="71" Label="Source2" />
       <Edge From="57" To="58" Label="Source1" />
-      <Edge From="57" To="70" Label="Source3" />
+      <Edge From="57" To="71" Label="Source3" />
       <Edge From="59" To="60" Label="Source1" />
-      <Edge From="59" To="70" Label="Source4" />
+      <Edge From="59" To="71" Label="Source4" />
       <Edge From="61" To="62" Label="Source1" />
-      <Edge From="61" To="70" Label="Source5" />
+      <Edge From="61" To="71" Label="Source5" />
       <Edge From="63" To="65" Label="Source1" />
       <Edge From="64" To="65" Label="Source2" />
       <Edge From="65" To="66" Label="Source1" />
       <Edge From="66" To="69" Label="Source1" />
       <Edge From="67" To="68" Label="Source1" />
       <Edge From="68" To="69" Label="Source2" />
-      <Edge From="70" To="73" Label="Source1" />
-      <Edge From="71" To="72" Label="Source1" />
-      <Edge From="72" To="73" Label="Source2" />
-      <Edge From="77" To="78" Label="Source1" />
+      <Edge From="70" To="71" Label="Source6" />
+      <Edge From="71" To="74" Label="Source1" />
+      <Edge From="72" To="73" Label="Source1" />
+      <Edge From="73" To="74" Label="Source2" />
       <Edge From="78" To="79" Label="Source1" />
-      <Edge From="80" To="81" Label="Source1" />
+      <Edge From="79" To="80" Label="Source1" />
       <Edge From="81" To="82" Label="Source1" />
-      <Edge From="83" To="84" Label="Source1" />
+      <Edge From="82" To="83" Label="Source1" />
       <Edge From="84" To="85" Label="Source1" />
-      <Edge From="86" To="87" Label="Source1" />
+      <Edge From="85" To="86" Label="Source1" />
       <Edge From="87" To="88" Label="Source1" />
-      <Edge From="89" To="90" Label="Source1" />
+      <Edge From="88" To="89" Label="Source1" />
       <Edge From="90" To="91" Label="Source1" />
-      <Edge From="92" To="93" Label="Source1" />
-      <Edge From="93" To="101" Label="Source1" />
-      <Edge From="94" To="101" Label="Source2" />
-      <Edge From="95" To="101" Label="Source3" />
-      <Edge From="96" To="101" Label="Source4" />
-      <Edge From="97" To="101" Label="Source5" />
-      <Edge From="98" To="101" Label="Source6" />
-      <Edge From="99" To="101" Label="Source7" />
-      <Edge From="100" To="101" Label="Source8" />
-      <Edge From="101" To="102" Label="Source1" />
+      <Edge From="91" To="92" Label="Source1" />
+      <Edge From="93" To="94" Label="Source1" />
+      <Edge From="94" To="102" Label="Source1" />
+      <Edge From="95" To="102" Label="Source2" />
+      <Edge From="96" To="102" Label="Source3" />
+      <Edge From="97" To="102" Label="Source4" />
+      <Edge From="98" To="102" Label="Source5" />
+      <Edge From="99" To="102" Label="Source6" />
+      <Edge From="100" To="102" Label="Source7" />
+      <Edge From="101" To="102" Label="Source8" />
       <Edge From="102" To="103" Label="Source1" />
+      <Edge From="103" To="104" Label="Source1" />
     </Edges>
   </Workflow>
 </WorkflowBuilder>
