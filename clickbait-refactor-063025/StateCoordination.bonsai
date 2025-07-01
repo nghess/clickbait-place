@@ -1,0 +1,197 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.8.1"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
+                 xmlns:sys="clr-namespace:System;assembly=mscorlib"
+                 xmlns="https://bonsai-rx.org/2018/workflow">
+  <Workflow>
+    <Nodes>
+      <!-- Initialize Current State -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="StringProperty">
+          <Value>Search</Value>
+        </Combinator>
+      </Expression>
+      
+      <Expression xsi:type="rx:ReplaySubject">
+        <Name>CurrentState</Name>
+        <rx:BufferSize xsi:nil="true" />
+      </Expression>
+      
+      <!-- Initialize Active Target -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="IntProperty">
+          <Value>-1</Value>
+        </Combinator>
+      </Expression>
+      
+      <Expression xsi:type="rx:ReplaySubject">
+        <Name>ActiveTarget</Name>
+        <rx:BufferSize xsi:nil="true" />
+      </Expression>
+      
+      <!-- Initialize Target Queue -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="IntProperty">
+          <Value>0</Value>
+        </Combinator>
+      </Expression>
+      
+      <Expression xsi:type="rx:ReplaySubject">
+        <Name>TargetQueue</Name>
+        <rx:BufferSize xsi:nil="true" />
+      </Expression>
+      
+      <!-- Initialize Target Distribution -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="FloatProperty">
+          <Value>0</Value>
+        </Combinator>
+      </Expression>
+      
+      <Expression xsi:type="rx:ReplaySubject">
+        <Name>TargetDistribution</Name>
+        <rx:BufferSize xsi:nil="true" />
+      </Expression>
+      
+      <!-- Initialize Trial Count -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="IntProperty">
+          <Value>0</Value>
+        </Combinator>
+      </Expression>
+      
+      <Expression xsi:type="rx:ReplaySubject">
+        <Name>TrialCount</Name>
+        <rx:BufferSize xsi:nil="true" />
+      </Expression>
+      
+      <!-- Initialize Reward Left Count -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="IntProperty">
+          <Value>0</Value>
+        </Combinator>
+      </Expression>
+      
+      <Expression xsi:type="rx:ReplaySubject">
+        <Name>RewardLeftCount</Name>
+        <rx:BufferSize xsi:nil="true" />
+      </Expression>
+      
+      <!-- Initialize Reward Right Count -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="IntProperty">
+          <Value>0</Value>
+        </Combinator>
+      </Expression>
+      
+      <Expression xsi:type="rx:ReplaySubject">
+        <Name>RewardRightCount</Name>
+        <rx:BufferSize xsi:nil="true" />
+      </Expression>
+      
+      <!-- Initialize Flip State -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="IntProperty">
+          <Value>0</Value>
+        </Combinator>
+      </Expression>
+      
+      <Expression xsi:type="rx:ReplaySubject">
+        <Name>FlipState</Name>
+        <rx:BufferSize xsi:nil="true" />
+      </Expression>
+      
+      <!-- Initialize State Start Time -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="rx:Timestamp" />
+      </Expression>
+      
+      <Expression xsi:type="MemberSelector">
+        <Selector>Timestamp</Selector>
+      </Expression>
+      
+      <Expression xsi:type="rx:ReplaySubject">
+        <Name>StateStartTime</Name>
+        <rx:BufferSize xsi:nil="true" />
+      </Expression>
+      
+      <!-- Initialize Reward Left -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="BooleanProperty">
+          <Value>false</Value>
+        </Combinator>
+      </Expression>
+      
+      <Expression xsi:type="rx:ReplaySubject">
+        <Name>RewardLeft</Name>
+        <rx:BufferSize xsi:nil="true" />
+      </Expression>
+      
+      <!-- Initialize Reward Right -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="BooleanProperty">
+          <Value>false</Value>
+        </Combinator>
+      </Expression>
+      
+      <Expression xsi:type="rx:ReplaySubject">
+        <Name>RewardRight</Name>
+        <rx:BufferSize xsi:nil="true" />
+      </Expression>
+      
+      <!-- Initialize Click -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="BooleanProperty">
+          <Value>false</Value>
+        </Combinator>
+      </Expression>
+      
+      <Expression xsi:type="rx:ReplaySubject">
+        <Name>Click</Name>
+        <rx:BufferSize xsi:nil="true" />
+      </Expression>
+      
+      <!-- Initialize Grid Config -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="IntProperty">
+          <Value>7</Value>
+        </Combinator>
+      </Expression>
+      
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="IntProperty">
+          <Value>15</Value>
+        </Combinator>
+      </Expression>
+      
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="rx:Zip" />
+      </Expression>
+      
+      <Expression xsi:type="rx:ReplaySubject">
+        <Name>GridConfig</Name>
+        <rx:BufferSize xsi:nil="true" />
+      </Expression>
+      
+    </Nodes>
+    <Edges>
+      <Edge From="0" To="1" Label="Source1" />
+      <Edge From="2" To="3" Label="Source1" />
+      <Edge From="4" To="5" Label="Source1" />
+      <Edge From="6" To="7" Label="Source1" />
+      <Edge From="8" To="9" Label="Source1" />
+      <Edge From="10" To="11" Label="Source1" />
+      <Edge From="12" To="13" Label="Source1" />
+      <Edge From="14" To="15" Label="Source1" />
+      <Edge From="16" To="17" Label="Source1" />
+      <Edge From="17" To="18" Label="Source1" />
+      <Edge From="19" To="20" Label="Source1" />
+      <Edge From="21" To="22" Label="Source1" />
+      <Edge From="23" To="24" Label="Source1" />
+      <Edge From="25" To="27" Label="Source1" />
+      <Edge From="26" To="27" Label="Source2" />
+      <Edge From="27" To="28" Label="Source1" />
+    </Edges>
+  </Workflow>
+</WorkflowBuilder>

@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.8.1"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
+                 xmlns:sys="clr-namespace:System;assembly=mscorlib"
+                 xmlns="https://bonsai-rx.org/2018/workflow">
+  <Workflow>
+    <Description>Modular Clickbait Task - Adding inputs</Description>
+    <Nodes>
+      
+      <!-- EXTERNAL INPUTS -->
+      <Expression xsi:type="ExternalizedMapping">
+        <Property Name="Value" DisplayName="MousePosition" />
+      </Expression>
+      
+      <Expression xsi:type="ExternalizedMapping">
+        <Property Name="Value" DisplayName="PokeStates" />
+      </Expression>
+      
+      <Expression xsi:type="ExternalizedMapping">
+        <Property Name="Value" DisplayName="Image" />
+      </Expression>
+      
+      <!-- STATE COORDINATION: Initialize all shared subjects -->
+      <Expression xsi:type="IncludeWorkflow" Path="StateCoordination.bonsai" />
+      
+      <!-- SEARCH STATE: Handle target detection -->
+      <Expression xsi:type="IncludeWorkflow" Path="SearchState.bonsai">
+        <MousePosition>MousePosition</MousePosition>
+      </Expression>
+      
+      <!-- REWARD STATE: Handle poke detection and reward delivery -->  
+      <Expression xsi:type="IncludeWorkflow" Path="RewardState.bonsai">
+        <PokeStates>PokeStates</PokeStates>
+      </Expression>
+      
+      <!-- WITHDRAWAL STATE: Handle withdrawal period -->
+      <Expression xsi:type="IncludeWorkflow" Path="WithdrawalState.bonsai">
+        <PokeStates>PokeStates</PokeStates>
+      </Expression>
+      
+      <!-- ITI STATE: Handle inter-trial intervals -->
+      <Expression xsi:type="IncludeWorkflow" Path="ITIState.bonsai" />
+      
+      <!-- TARGET GENERATION: Handle distribution generation -->
+      <Expression xsi:type="IncludeWorkflow" Path="TargetGeneration.bonsai" />
+      
+      <!-- OUTPUT COORDINATION: Gather all state for final tuple -->
+      <Expression xsi:type="SubscribeSubject">
+        <Name>CurrentState</Name>
+      </Expression>
+      
+      <Expression xsi:type="SubscribeSubject">
+        <Name>RewardLeft</Name>
+      </Expression>
+      
+      <Expression xsi:type="SubscribeSubject">
+        <Name>RewardRight</Name>
+      </Expression>
+      
+      <Expression xsi:type="SubscribeSubject">
+        <Name>Click</Name>
+      </Expression>
+      
+      <Expression xsi:type="SubscribeSubject">
+        <Name>ActiveTarget</Name>
+      </Expression>
+      
+      <Expression xsi:type="SubscribeSubject">
+        <Name>TrialCount</Name>
+      </Expression>
+      
+      <Expression xsi:type="SubscribeSubject">
+        <Name>RewardLeftCount</Name>
+      </Expression>
+      
+      <Expression xsi:type="SubscribeSubject">
+        <Name>RewardRightCount</Name>
+      </Expression>
+      
+      <Expression xsi:type="SubscribeSubject">
+        <Name>TargetDistribution</Name>
+      </Expression>
+      
+      <Expression xsi:type="SubscribeSubject">
+        <Name>FlipState</Name>
+      </Expression>
+      
+      <!-- Combine all outputs -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="rx:CombineLatest" />
+      </Expression>
+      
+      <!-- Create final output tuple (simplified for now) -->
+      <Expression xsi:type="ExternalizedMapping">
+        <Property Name="Value" DisplayName="ModularOutput" />
+      </Expression>
+      
+    </Nodes>
+    <Edges>
+      <!-- Pass external inputs to sub-workflows -->
+      <Edge From="0" To="4" Label="Source1" />
+      <Edge From="1" To="5" Label="Source1" />
+      <Edge From="1" To="6" Label="Source1" />
+      
+      <!-- Combine all state outputs -->
+      <Edge From="8" To="17" Label="Source1" />
+      <Edge From="9" To="17" Label="Source2" />
+      <Edge From="10" To="17" Label="Source3" />
+      <Edge From="11" To="17" Label="Source4" />
+      <Edge From="12" To="17" Label="Source5" />
+      <Edge From="13" To="17" Label="Source6" />
+      <Edge From="14" To="17" Label="Source7" />
+      <Edge From="15" To="17" Label="Source8" />
+      <Edge From="16" To="17" Label="Source9" />
+      <Edge From="17" To="18" Label="Source1" />
+    </Edges>
+  </Workflow>
+</WorkflowBuilder>

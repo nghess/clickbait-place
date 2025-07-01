@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.8.1"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
+                 xmlns:sys="clr-namespace:System;assembly=mscorlib"
+                 xmlns:ipy="clr-namespace:Bonsai.Scripting.IronPython;assembly=Bonsai.Scripting.IronPython"
+                 xmlns="https://bonsai-rx.org/2018/workflow">
+  <Workflow>
+    <Description>Handles withdrawal period waiting for mouse to stop poking</Description>
+    <Nodes>
+      <!-- Subscribe to Current State -->
+      <Expression xsi:type="SubscribeSubject">
+        <Name>CurrentState</Name>
+      </Expression>
+      
+      <!-- Only process when in Withdrawal state -->
+      <Expression xsi:type="Condition">
+        <Condition xsi:type="Equal">
+          <Operand xsi:type="StringProperty">
+            <Value>Withdrawal</Value>
+          </Operand>
+        </Condition>
+      </Expression>
+      
+      <!-- Subscribe to poke states -->
+      <Expression xsi:type="ExternalizedMapping">
+        <Property Name="Value" DisplayName="PokeStates" />
+      </Expression>
+      
+      <!-- Subscribe to State Start Time -->
+      <Expression xsi:type="SubscribeSubject">
+        <Name>StateStartTime</Name>
+      </Expression>
+      
+      <!-- Combine inputs -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="rx:CombineLatest" />
+      </Expression>
+      
+      <!-- Withdrawal Logic -->
+      <Expression xsi:type="ipy:PythonTransform">
+        <ipy:Name>Withdrawal Logic</ipy:Name>
+        <ipy:Script>import clr
+clr.AddReference("System")
+from System import DateTime, Tuple
+
+# Withdrawal duration (in seconds)
+WITHDRAWAL_DURATION = 0.5
+
+@returns(Tuple[bool, str])
+def process(value):
+    # Extract inputs
+    current_state = value.Item1
+    poke_states = value.Item2
+    state_start_time = value.Item3
+    
+    if current_state != "Withdrawal":
+        return Tuple.Create(False, "Withdrawal")
+    
+    poke_left = poke_states.Item1
+    poke_right = poke_states.Item2
+    
+    current_time = DateTime.Now
+    
+    # Check if mouse is still poking
+    still_poking = poke_left or poke_right
+    
+    if not still_poking:
+        # Mouse has withdrawn, check if withdrawal period has elapsed
+        time_elapsed = (current_time - state_start_time).TotalSeconds
+        if time_elapsed &gt;= WITHDRAWAL_DURATION:
+            # Transition to ITI
+            return Tuple.Create(True, "ITI")
+        else:
+            # Still in withdrawal period
+            return Tuple.Create(False, "Withdrawal")
+    else:
+        # Mouse is still poking, reset withdrawal timer
+        return Tuple.Create(False, "Withdrawal")
+</ipy:Script>
+      </Expression>
+      
+      <!-- Extract transition flag -->
+      <Expression xsi:type="MemberSelector">
+        <Selector>Item1</Selector>
+      </Expression>
+      
+      <!-- Extract next state -->
+      <Expression xsi:type="MemberSelector">
+        <Selector>Item2</Selector>
+      </Expression>
+      
+      <!-- Filter for state transitions -->
+      <Expression xsi:type="Condition">
+      </Expression>
+      
+      <!-- Update Current State -->
+      <Expression xsi:type="MulticastSubject">
+        <Name>CurrentState</Name>
+      </Expression>
+      
+      <!-- Update State Start Time for ITI -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="rx:Timestamp" />
+      </Expression>
+      
+      <Expression xsi:type="MemberSelector">
+        <Selector>Timestamp</Selector>
+      </Expression>
+      
+      <Expression xsi:type="MulticastSubject">
+        <Name>StateStartTime</Name>
+      </Expression>
+      
+    </Nodes>
+    <Edges>
+      <Edge From="0" To="1" Label="Source1" />
+      <Edge From="1" To="4" Label="Source1" />
+      <Edge From="2" To="4" Label="Source2" />
+      <Edge From="3" To="4" Label="Source3" />
+      <Edge From="4" To="5" Label="Source1" />
+      <Edge From="5" To="6" Label="Source1" />
+      <Edge From="5" To="7" Label="Source1" />
+      <Edge From="6" To="8" Label="Source1" />
+      <Edge From="7" To="8" Label="Source2" />
+      <Edge From="8" To="9" Label="Source1" />
+      <Edge From="8" To="10" Label="Source1" />
+      <Edge From="10" To="11" Label="Source1" />
+      <Edge From="11" To="12" Label="Source1" />
+    </Edges>
+  </Workflow>
+</WorkflowBuilder>
