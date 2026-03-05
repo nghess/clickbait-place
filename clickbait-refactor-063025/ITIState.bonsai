@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.8.1"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
+                 xmlns:sys="clr-namespace:System;assembly=mscorlib"
+                 xmlns:ipy="clr-namespace:Bonsai.Scripting.IronPython;assembly=Bonsai.Scripting.IronPython"
+                 xmlns="https://bonsai-rx.org/2018/workflow">
+  <Workflow>
+    <Description>Handles inter-trial interval, target generation, and flip state logic</Description>
+    <Nodes>
+      <!-- Subscribe to Current State -->
+      <Expression xsi:type="SubscribeSubject">
+        <Name>CurrentState</Name>
+      </Expression>
+      
+      <!-- Only process when in ITI state -->
+      <Expression xsi:type="Condition">
+        <Condition xsi:type="Equal">
+          <Operand xsi:type="StringProperty">
+            <Value>ITI</Value>
+          </Operand>
+        </Condition>
+      </Expression>
+      
+      <!-- Subscribe to State Start Time -->
+      <Expression xsi:type="SubscribeSubject">
+        <Name>StateStartTime</Name>
+      </Expression>
+      
+      <!-- Subscribe to current flip state and trial count -->
+      <Expression xsi:type="SubscribeSubject">
+        <Name>FlipState</Name>
+      </Expression>
+      
+      <Expression xsi:type="SubscribeSubject">
+        <Name>TrialCount</Name>
+      </Expression>
+      
+      <Expression xsi:type="SubscribeSubject">
+        <Name>TargetQueue</Name>
+      </Expression>
+      
+      <!-- Combine all inputs -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="rx:WithLatestFrom" />
+      </Expression>
+      
+      <!-- ITI Logic -->
+      <Expression xsi:type="ipy:PythonTransform">
+        <ipy:Name>ITI Logic</ipy:Name>
+        <ipy:Script>import clr
+clr.AddReference("System")
+from System import DateTime, Tuple, Array, Random
+import random
+
+# ITI duration range (in seconds)
+ITI_DURATION_MIN = 1.0
+ITI_DURATION_MAX = 3.0
+
+# Flip state configuration
+MIN_TRIALS_BEFORE_FLIP = 4
+MAX_TRIALS_BEFORE_FLIP = 10
+
+# Global state tracking (normally would be in subjects)
+# These would need to be managed via additional subjects in real implementation
+global trials_since_last_flip, trials_until_next_flip, iti_duration, iti_start_time
+
+if 'trials_since_last_flip' not in globals():
+    trials_since_last_flip = 0
+    trials_until_next_flip = random.randint(MIN_TRIALS_BEFORE_FLIP, MAX_TRIALS_BEFORE_FLIP)
+    iti_duration = random.uniform(ITI_DURATION_MIN, ITI_DURATION_MAX)
+    iti_start_time = None
+
+@returns(Tuple[bool, str, int, int, bool, int])
+def process(value):
+    global trials_since_last_flip, trials_until_next_flip, iti_duration, iti_start_time
+    
+    # Extract inputs
+    state_start_time = value.Item1
+    current_flip_state = value.Item2
+    current_trial_count = value.Item3
+    current_target_queue = value.Item4
+    
+    current_time = DateTime.Now
+    
+    if iti_start_time is None:
+        iti_start_time = state_start_time
+        iti_duration = random.uniform(ITI_DURATION_MIN, ITI_DURATION_MAX)
+    
+    # Check if ITI duration has elapsed
+    time_elapsed = (current_time - iti_start_time).TotalSeconds
+    
+    if time_elapsed &gt;= iti_duration:
+        # ITI complete, increment trial count
+        new_trial_count = current_trial_count + 1
+        trials_since_last_flip += 1
+        
+        # Check if we need to flip state
+        need_flip = trials_since_last_flip &gt;= trials_until_next_flip
+        new_flip_state = current_flip_state
+        
+        if need_flip:
+            # Flip the state
+            new_flip_state = 1 - current_flip_state
+            trials_since_last_flip = 0
+            trials_until_next_flip = random.randint(MIN_TRIALS_BEFORE_FLIP, MAX_TRIALS_BEFORE_FLIP)
+        
+        # Determine next active target
+        if len(current_target_queue) > 0:
+            next_active_target = current_target_queue[0]
+        else:
+            next_active_target = -1
+        
+        # Reset ITI timing for next round
+        iti_start_time = None
+        
+        return Tuple.Create(
+            True,  # Transition to Search
+            "Search",  # Next state
+            new_trial_count,
+            new_flip_state, 
+            need_flip,  # Flag to trigger target regeneration
+            next_active_target
+        )
+    else:
+        # Still in ITI
+        return Tuple.Create(
+            False,  # No transition
+            "ITI",  # Stay in ITI
+            current_trial_count,
+            current_flip_state,
+            False,  # No flip
+            -1  # No target change
+        )
+</ipy:Script>
+      </Expression>
+      
+      <!-- Extract outputs -->
+      <Expression xsi:type="MemberSelector">
+        <Selector>Item1</Selector>
+      </Expression>
+      
+      <Expression xsi:type="MemberSelector">
+        <Selector>Item2</Selector>
+      </Expression>
+      
+      <Expression xsi:type="MemberSelector">
+        <Selector>Item3</Selector>
+      </Expression>
+      
+      <Expression xsi:type="MemberSelector">
+        <Selector>Item4</Selector>
+      </Expression>
+      
+      <Expression xsi:type="MemberSelector">
+        <Selector>Item5</Selector>
+      </Expression>
+      
+      <Expression xsi:type="MemberSelector">
+        <Selector>Item6</Selector>
+      </Expression>
+      
+      <!-- Update Trial Count -->
+      <Expression xsi:type="MulticastSubject">
+        <Name>TrialCount</Name>
+      </Expression>
+      
+      <!-- Update Flip State -->
+      <Expression xsi:type="MulticastSubject">
+        <Name>FlipState</Name>
+      </Expression>
+      
+      <!-- Filter for state transitions -->
+      <Expression xsi:type="Condition">
+        <Name>Transition Filter</Name>
+      </Expression>
+      
+      <!-- Update Current State -->
+      <Expression xsi:type="MulticastSubject">
+        <Name>CurrentState</Name>
+      </Expression>
+      
+      <!-- Update Active Target -->
+      <Expression xsi:type="MulticastSubject">
+        <Name>ActiveTarget</Name>
+      </Expression>
+      
+      <!-- Filter for flip events -->
+      <Expression xsi:type="Condition">
+        <Name>Flip Filter</Name>
+      </Expression>
+      
+      <!-- Trigger Target Regeneration connects to TargetGeneration workflow via flip state change -->
+      
+    </Nodes>
+    <Edges>
+      <Edge From="0" To="1" Label="Source1" />
+      <Edge From="1" To="6" Label="Source1" />
+      <Edge From="2" To="6" Label="Source2" />
+      <Edge From="3" To="6" Label="Source3" />
+      <Edge From="4" To="6" Label="Source4" />
+      <Edge From="5" To="6" Label="Source5" />
+      <Edge From="6" To="7" Label="Source1" />
+      <Edge From="7" To="8" Label="Source1" />
+      <Edge From="7" To="9" Label="Source1" />
+      <Edge From="7" To="10" Label="Source1" />
+      <Edge From="7" To="11" Label="Source1" />
+      <Edge From="7" To="12" Label="Source1" />
+      <Edge From="7" To="13" Label="Source1" />
+      <Edge From="10" To="14" Label="Source1" />
+      <Edge From="11" To="15" Label="Source1" />
+      <Edge From="8" To="16" Label="Source1" />
+      <Edge From="9" To="16" Label="Source2" />
+      <Edge From="16" To="17" Label="Source1" />
+      <Edge From="13" To="18" Label="Source1" />
+      <Edge From="12" To="18" Label="Source1" />
+    </Edges>
+  </Workflow>
+</WorkflowBuilder>

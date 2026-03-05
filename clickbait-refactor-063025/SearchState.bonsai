@@ -1,0 +1,164 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.8.1"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
+                 xmlns:sys="clr-namespace:System;assembly=mscorlib"
+                 xmlns:cv="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision"
+                 xmlns:ipy="clr-namespace:Bonsai.Scripting.IronPython;assembly=Bonsai.Scripting.IronPython"
+                 xmlns="https://bonsai-rx.org/2018/workflow">
+  <Workflow>
+    <Nodes>
+      <!-- Subscribe to Current State -->
+      <Expression xsi:type="SubscribeSubject">
+        <Name>CurrentState</Name>
+      </Expression>
+      
+      <!-- Subscribe to Active Target -->
+      <Expression xsi:type="SubscribeSubject">
+        <Name>ActiveTarget</Name>
+      </Expression>
+      
+      <!-- Subscribe to Grid Config -->
+      <Expression xsi:type="SubscribeSubject">
+        <Name>GridConfig</Name>
+      </Expression>
+      
+      <!-- External mouse position input -->
+      <Expression xsi:type="ExternalizedMapping">
+        <Property Name="Value" DisplayName="MousePosition" />
+      </Expression>
+      
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="rx:CombineLatest" />
+      </Expression>
+      
+      <!-- Target Detection Logic -->
+      <Expression xsi:type="ipy:PythonTransform">
+        <ipy:Name>Target Detection</ipy:Name>
+        <ipy:Script>import clr
+clr.AddReference("System")
+from System import Tuple
+import math
+
+def get_grid_location(centroid_x, centroid_y, grid_cells_x, grid_cells_y, img_width, img_height, active_target):
+    if active_target == -1:
+        return False
+    
+    cell_width = img_width // grid_cells_x
+    cell_height = img_height // grid_cells_y
+    
+    grid_x = int(centroid_x // cell_width) - 1
+    grid_y = int(centroid_y // cell_height) - 1
+    
+    # Use range checks instead of &lt;= operators
+    if grid_x &gt;= 0 and grid_x &lt; grid_cells_x-2 and grid_y &gt;= 0 and grid_y &lt; grid_cells_y-2:
+        cell_index = grid_y * (grid_cells_x-2) + grid_x
+        return cell_index == active_target
+    
+    return False
+
+@returns(bool)
+def process(value):
+    current_state = value.Item1
+    active_target = value.Item2
+    grid_config = value.Item3
+    mouse_pos = value.Item4
+    
+    if current_state != "Search":
+        return False
+    
+    if not mouse_pos:
+        return False
+        
+    centroid_x, centroid_y = float(mouse_pos.Item1), float(mouse_pos.Item2)
+    
+    if math.isnan(centroid_x) or math.isnan(centroid_y):
+        return False
+    
+    grid_cells_x, grid_cells_y = grid_config.Item1, grid_config.Item2
+    
+    img_width, img_height = 2048, 2048
+    
+    target_found = get_grid_location(
+        centroid_x, centroid_y, 
+        grid_cells_x, grid_cells_y, 
+        img_width, img_height, 
+        active_target
+    )
+    
+    return target_found
+</ipy:Script>
+      </Expression>
+      
+      <!-- Filter for target found events -->
+      <Expression xsi:type="Condition">
+      </Expression>
+      
+      <!-- Trigger state transition to Reward -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="StringProperty">
+          <Value>Reward</Value>
+        </Combinator>
+      </Expression>
+      
+      <!-- Update Current State -->
+      <Expression xsi:type="MulticastSubject">
+        <Name>CurrentState</Name>
+      </Expression>
+      
+      <!-- Clear Active Target -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="IntProperty">
+          <Value>-1</Value>
+        </Combinator>
+      </Expression>
+      
+      <Expression xsi:type="MulticastSubject">
+        <Name>ActiveTarget</Name>
+      </Expression>
+      
+      <!-- Trigger Click -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="BooleanProperty">
+          <Value>true</Value>
+        </Combinator>
+      </Expression>
+      
+      <Expression xsi:type="MulticastSubject">
+        <Name>Click</Name>
+      </Expression>
+      
+      <!-- Set State Start Time -->
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="rx:Timestamp" />
+      </Expression>
+      
+      <Expression xsi:type="MemberSelector">
+        <Selector>Timestamp</Selector>
+      </Expression>
+      
+      <Expression xsi:type="MulticastSubject">
+        <Name>StateStartTime</Name>
+      </Expression>
+      
+    </Nodes>
+    <Edges>
+      <Edge From="0" To="4" Label="Source1" />
+      <Edge From="1" To="4" Label="Source2" />
+      <Edge From="2" To="4" Label="Source3" />
+      <Edge From="3" To="4" Label="Source4" />
+      <Edge From="4" To="5" Label="Source1" />
+      <Edge From="5" To="6" Label="Source1" />
+      <Edge From="6" To="7" Label="Source1" />
+      <Edge From="7" To="8" Label="Source1" />
+      <Edge From="7" To="9" Label="Source1" />
+      <Edge From="7" To="11" Label="Source1" />
+      <Edge From="7" To="13" Label="Source1" />
+      <Edge From="8" To="9" Label="Source1" />
+      <Edge From="10" To="11" Label="Source1" />
+      <Edge From="12" To="13" Label="Source1" />
+      <Edge From="13" To="14" Label="Source1" />
+      <Edge From="14" To="15" Label="Source1" />
+    </Edges>
+  </Workflow>
+</WorkflowBuilder>
