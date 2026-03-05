@@ -60,7 +60,7 @@
         <Combinator xsi:type="sleap:PredictSinglePose">
           <sleap:ModelFileName>D:\github-repos\clickbait-sleap\clickbait-motivate-sparse\frozen_graph.pb</sleap:ModelFileName>
           <sleap:TrainingConfig>D:\github-repos\clickbait-sleap\clickbait-motivate-sparse\training_config.json</sleap:TrainingConfig>
-          <sleap:PartMinConfidence>0</sleap:PartMinConfidence>
+          <sleap:PartMinConfidence>0.1</sleap:PartMinConfidence>
           <sleap:ScaleFactor>1</sleap:ScaleFactor>
           <sleap:ColorConversion xsi:nil="true" />
         </Combinator>
@@ -464,8 +464,8 @@ max_targets_per_cell = 5
 
 # Flip state parameters
 FLIP_STATE_CONFIG = {
-    'min_trials_before_flip': 4,    # Minimum trials before state flip
-    'max_trials_before_flip': 10,   # Maximum trials before state flip
+    'min_trials_before_flip': 2,    # Minimum trials before state flip
+    'max_trials_before_flip': 5,   # Maximum trials before state flip
 }
 
 # Distribution configurations for each flip state
@@ -767,7 +767,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:VideoWriter">
-          <cv:FileName>D:\clickbait-place\data\motivate-sleap\7010\m2\10062025_7010_m2.avi</cv:FileName>
+          <cv:FileName>D:\clickbait-place\data\clickbait-motivate\7013\m15\10282025_7013_m15.avi</cv:FileName>
           <cv:Suffix>None</cv:Suffix>
           <cv:Buffered>true</cv:Buffered>
           <cv:Overwrite>false</cv:Overwrite>
@@ -795,7 +795,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\motivate-sleap\7010\m2\10062025_7010_m2_video_timestamp.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\clickbait-motivate\7013\m15\10282025_7013_m15_video_timestamp.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -917,7 +917,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\motivate-sleap\7010\m2\10062025_7010_m2_eventsA.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\clickbait-motivate\7013\m15\10282025_7013_m15_eventsA.csv</io:FileName>
         <io:Delimiter>,</io:Delimiter>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
@@ -1041,7 +1041,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="io:WriteAllText">
-          <io:Path>D:\clickbait-place\data\motivate-sleap\7010\m2\10062025_7010_m2_trialcounts.txt</io:Path>
+          <io:Path>D:\clickbait-place\data\clickbait-motivate\7013\m15\10282025_7013_m15_trialcounts.txt</io:Path>
           <io:Overwrite>true</io:Overwrite>
           <io:Append>false</io:Append>
         </Combinator>
@@ -1061,7 +1061,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\motivate-sleap\7010\m2\10062025_7010_m2_eventsB.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\clickbait-motivate\7013\m15\10282025_7013_m15_eventsB.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -1213,7 +1213,7 @@ def process(value):
                     <gl:WrapT>Repeat</gl:WrapT>
                     <gl:MinFilter>Linear</gl:MinFilter>
                     <gl:MagFilter>Linear</gl:MagFilter>
-                    <gl:FileName>D:\clickbait-place\stimuli\1515_b5_binary_m2.mp4</gl:FileName>
+                    <gl:FileName>stimuli\triangle.mp4</gl:FileName>
                     <gl:FlipMode>Vertical</gl:FlipMode>
                     <gl:FrameCount xsi:nil="true" />
                     <gl:StartPosition>0</gl:StartPosition>
@@ -1288,45 +1288,6 @@ def process(value):
               <ShiftY>0</ShiftY>
               <Layer>0</Layer>
             </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="Combinator">
-                <Combinator xsi:type="gl:Timer">
-                  <gl:DueTime>PT0S</gl:DueTime>
-                  <gl:Period>PT5M</gl:Period>
-                </Combinator>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="PropertyMapping">
-                <PropertyMappings>
-                  <Property Name="Value" />
-                </PropertyMappings>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="Combinator">
-                <Combinator xsi:type="IntProperty">
-                  <Value>0</Value>
-                </Combinator>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="Mod">
-                <Operand xsi:type="WorkflowProperty" TypeArguments="sys:Int64">
-                  <Value>2</Value>
-                </Operand>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="SubscribeSubject">
-                <Name>Session Number</Name>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="Combinator">
-                <Combinator xsi:type="rx:WithLatestFrom" />
-              </Builder>
-            </Expression>
           </Nodes>
           <Edges>
             <Edge From="0" To="1" Label="Source1" />
@@ -1340,11 +1301,6 @@ def process(value):
             <Edge From="10" To="11" Label="Source1" />
             <Edge From="11" To="12" Label="Source1" />
             <Edge From="12" To="13" Label="Source2" />
-            <Edge From="14" To="15" Label="Source1" />
-            <Edge From="15" To="16" Label="Source1" />
-            <Edge From="16" To="17" Label="Source1" />
-            <Edge From="17" To="19" Label="Source1" />
-            <Edge From="18" To="19" Label="Source2" />
           </Edges>
         </Workflow>
       </Expression>
@@ -1716,7 +1672,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>10062025</Value>
+          <Value>10302025</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1728,7 +1684,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="FloatProperty">
-          <Value>30</Value>
+          <Value>45</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1740,7 +1696,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>7010</Value>
+          <Value>7013</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1752,7 +1708,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>m2</Value>
+          <Value>m16</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1764,7 +1720,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>motivate-sleap</Value>
+          <Value>clickbait-motivate</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">

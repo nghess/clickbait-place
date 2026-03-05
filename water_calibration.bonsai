@@ -40,7 +40,7 @@ def generate():
 
 @returns(bool)
 def process(value):
-  time.sleep(.071)
+  time.sleep(.032)
   return False
 </ipy:Script>
       </Expression>
@@ -57,7 +57,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="rx:Delay">
-          <rx:DueTime>PT1S</rx:DueTime>
+          <rx:DueTime>PT0.5S</rx:DueTime>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
@@ -91,7 +91,7 @@ def generate():
 
 @returns(bool)
 def process(value):
-  time.sleep(.051)
+  time.sleep(.032)
   return False
 </ipy:Script>
       </Expression>
@@ -108,7 +108,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="rx:Delay">
-          <rx:DueTime>PT1S</rx:DueTime>
+          <rx:DueTime>PT0.5S</rx:DueTime>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">

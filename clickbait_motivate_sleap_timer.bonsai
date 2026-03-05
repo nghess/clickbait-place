@@ -2,8 +2,9 @@
 <WorkflowBuilder Version="2.8.5"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                  xmlns:ard="clr-namespace:Bonsai.Arduino;assembly=Bonsai.Arduino"
-                 xmlns:pylon="clr-namespace:Bonsai.Pylon;assembly=Bonsai.Pylon"
                  xmlns:cv="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision"
+                 xmlns:pylon="clr-namespace:Bonsai.Pylon;assembly=Bonsai.Pylon"
+                 xmlns:sleap="clr-namespace:Bonsai.Sleap;assembly=Bonsai.Sleap"
                  xmlns:ipy="clr-namespace:Bonsai.Scripting.IronPython;assembly=Bonsai.Scripting.IronPython"
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
                  xmlns:io="clr-namespace:Bonsai.IO;assembly=Bonsai.System"
@@ -21,6 +22,18 @@
           <ard:SamplingInterval>19</ard:SamplingInterval>
         </Combinator>
       </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="Combinator">
+          <Combinator xsi:type="cv:FileCapture">
+            <cv:FileName>data\motivate-test\7010\m0\10042025_7010_m0.avi</cv:FileName>
+            <cv:PlaybackRate>30</cv:PlaybackRate>
+            <cv:StartPosition>0</cv:StartPosition>
+            <cv:PositionUnits>Frames</cv:PositionUnits>
+            <cv:Loop>false</cv:Loop>
+            <cv:Playing>true</cv:Playing>
+          </Combinator>
+        </Builder>
+      </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="pylon:PylonCapture">
           <pylon:SerialNumber>24714376</pylon:SerialNumber>
@@ -32,64 +45,41 @@
         <Selector>Image</Selector>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="cv:Flip">
-          <cv:Mode>Vertical</cv:Mode>
-        </Combinator>
-      </Expression>
-      <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:Grayscale" />
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="cv:Smooth">
-          <cv:SmoothType>Gaussian</cv:SmoothType>
-          <cv:Size1>27</cv:Size1>
-          <cv:Size2>27</cv:Size2>
-          <cv:Sigma1>20</cv:Sigma1>
-          <cv:Sigma2>20</cv:Sigma2>
+        <Combinator xsi:type="cv:Resize">
+          <cv:Size>
+            <cv:Width>448</cv:Width>
+            <cv:Height>992</cv:Height>
+          </cv:Size>
+          <cv:Interpolation>Cubic</cv:Interpolation>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="cv:Threshold">
-          <cv:ThresholdValue>60</cv:ThresholdValue>
-          <cv:MaxValue>255</cv:MaxValue>
-          <cv:ThresholdType>Binary</cv:ThresholdType>
-        </Combinator>
-      </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>Invert Image</ipy:Name>
-        <ipy:Script>import clr
-clr.AddReference("OpenCV.Net")
-from OpenCV.Net import *
-
-@returns(IplImage)
-def process(value):
-
-  image = 255-value
-  return image</ipy:Script>
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="cv:FindContours">
-          <cv:Mode>External</cv:Mode>
-          <cv:Method>ChainApproxSimple</cv:Method>
-          <cv:Offset>
-            <cv:X>0</cv:X>
-            <cv:Y>0</cv:Y>
-          </cv:Offset>
-          <cv:MinArea>12</cv:MinArea>
-          <cv:MaxArea xsi:nil="true" />
+        <Combinator xsi:type="sleap:PredictSinglePose">
+          <sleap:ModelFileName>D:\github-repos\clickbait-sleap\clickbait-motivate-sparse\frozen_graph.pb</sleap:ModelFileName>
+          <sleap:TrainingConfig>D:\github-repos\clickbait-sleap\clickbait-motivate-sparse\training_config.json</sleap:TrainingConfig>
+          <sleap:PartMinConfidence>0.1</sleap:PartMinConfidence>
+          <sleap:ScaleFactor>1</sleap:ScaleFactor>
+          <sleap:ColorConversion xsi:nil="true" />
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="cv:BinaryRegionAnalysis" />
+        <Combinator xsi:type="sleap:GetBodyPart">
+          <sleap:Name>nose</sleap:Name>
+        </Combinator>
       </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="cv:LargestBinaryRegion" />
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="cv:Centroid" />
+      <Expression xsi:type="MemberSelector">
+        <Selector>Position</Selector>
       </Expression>
       <Expression xsi:type="MemberSelector">
         <Selector>X</Selector>
+      </Expression>
+      <Expression xsi:type="ipy:PythonTransform">
+        <ipy:Script>@returns(str)
+def process(value):
+  return str(type(value))</ipy:Script>
       </Expression>
       <Expression xsi:type="MemberSelector">
         <Selector>Y</Selector>
@@ -471,11 +461,12 @@ def draw_targets(active_target, target_queue, grid, img, draw_distribution=False
 grid_x = 7
 grid_y = 15
 max_targets_per_cell = 5
+trial_timeout_duration = 5.0  # seconds before a trial expires as "incorrect"
 
 # Flip state parameters
 FLIP_STATE_CONFIG = {
-    'min_trials_before_flip': 4,    # Minimum trials before state flip
-    'max_trials_before_flip': 10,   # Maximum trials before state flip
+    'min_trials_before_flip': 2,    # Minimum trials before state flip
+    'max_trials_before_flip': 5,   # Maximum trials before state flip
 }
 
 # Distribution configurations for each flip state
@@ -546,6 +537,7 @@ _, _, target_queue, target_distribution, active_target = generate_targets(
 trial_count = 0
 reward_left_count = 0
 reward_right_count = 0
+incorrect_count = 0
 reward_state = True
 click = False
 click_start_time = 0
@@ -560,8 +552,12 @@ iti_duration = 0
 in_iti = False
 withdrawal_start_time = 0
 in_withdrawal_period = False
+trial_start_time = 0
+trial_active = False
 prev_poke_left = False
 prev_poke_right = False
+prev_centroid_x = 0
+prev_centroid_y = 0
 
 """
 # Visualization parameters
@@ -605,6 +601,12 @@ def process(value):
     global flip_state
     global trials_since_last_flip
     global trials_until_next_flip
+    global prev_centroid_x
+    global prev_centroid_y
+    global incorrect_count
+    global trial_start_time
+    global trial_active
+
 
     # Timing-related vars
     current_time = time.time()
@@ -622,6 +624,22 @@ def process(value):
 
     # Load realtime variables from Zip node
     centroid_x, centroid_y, image = value[0].Item1, value[0].Item2, value[0].Item3
+
+    # Handle NaNs in SLEAP Tracking by using previous valid position
+    if math.isnan(centroid_x):
+        centroid_x = prev_centroid_x
+    else:
+        centroid_x = int(centroid_x*2)
+        prev_centroid_x = centroid_x
+
+    if math.isnan(centroid_y):
+        centroid_y = prev_centroid_y
+    else:
+        centroid_y = int(centroid_y*2)
+        prev_centroid_y = centroid_y
+
+            
+
     poke_left, poke_right = bool(value[1][0]), bool(value[1][1])
 
     # Process grid and canvas
@@ -642,11 +660,25 @@ def process(value):
         if target_found_this_frame and active_target is not None and not reward_state:
             # Remove the found target
             active_target = None
+            trial_active = False
             
             # Trigger reward state
             reward_state = True
             click = True
             click_start_time = current_time
+
+    # Check for trial timeout
+    if trial_active and active_target is not None and not reward_state:
+        if current_time - trial_start_time &gt;= trial_timeout_duration:
+            # Trial expired — mark as incorrect
+            incorrect_count += 1
+            active_target = None
+            trial_active = False
+            
+            # Skip reward, go directly to ITI
+            in_iti = True
+            iti_start_time = current_time
+            iti_duration = random.uniform(iti_duration_min, iti_duration_max)
 
     # State machine logic
     if in_iti:
@@ -671,11 +703,20 @@ def process(value):
                 _, _, target_queue, target_distribution, active_target = generate_targets(
                     grid_cells_x, grid_cells_y, max_targets_per_cell, **current_config
                 )
+                # Start trial timer for the new target
+                if active_target is not None:
+                    trial_start_time = current_time
+                    trial_active = True
+                    reward_state = False
             else:
                 # Set next target if we need to (only if active target is None)
                 if active_target is None and target_queue:
                     active_target = target_queue[0]
                     target_queue = target_queue[1:]
+                    # Start trial timer for the new target
+                    trial_start_time = current_time
+                    trial_active = True
+                    reward_state = False
             
     elif in_withdrawal_period:
         if not (poke_left or poke_right):  # Mouse has withdrawn
@@ -721,7 +762,7 @@ def process(value):
     # Return values (added flip_state at the end)
     return (canvas, Point(centroid_x, centroid_y), reward_state, reward_left, reward_right, 
             poke_left, poke_right, drinking, in_iti, click, active_target, 
-            trial_count, reward_left_count, reward_right_count, tuple(target_distribution), flip_state)</ipy:Script>
+            trial_count, reward_left_count, reward_right_count, incorrect_count, tuple(target_distribution), flip_state)</ipy:Script>
       </Expression>
       <Expression xsi:type="ipy:PythonTransform">
         <ipy:Name>Grid Visualization</ipy:Name>
@@ -756,7 +797,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:VideoWriter">
-          <cv:FileName>D:\clickbait-place\data\motivate-test\7011\m0\10042025_7011_m0.avi</cv:FileName>
+          <cv:FileName>D:\clickbait-place\data\clickbait-motivate\8004\H1\10302025_8004_H1.avi</cv:FileName>
           <cv:Suffix>None</cv:Suffix>
           <cv:Buffered>true</cv:Buffered>
           <cv:Overwrite>false</cv:Overwrite>
@@ -784,7 +825,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\motivate-test\7011\m0\10042025_7011_m0_video_timestamp.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\clickbait-motivate\8004\H1\10302025_8004_H1_video_timestamp.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -906,7 +947,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\motivate-test\7011\m0\10042025_7011_m0_eventsA.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\clickbait-motivate\8004\H1\10302025_8004_H1_eventsA.csv</io:FileName>
         <io:Delimiter>,</io:Delimiter>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
@@ -1030,7 +1071,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="io:WriteAllText">
-          <io:Path>D:\clickbait-place\data\motivate-test\7011\m0\10042025_7011_m0_trialcounts.txt</io:Path>
+          <io:Path>D:\clickbait-place\data\clickbait-motivate\8004\H1\10302025_8004_H1_trialcounts.txt</io:Path>
           <io:Overwrite>true</io:Overwrite>
           <io:Append>false</io:Append>
         </Combinator>
@@ -1050,7 +1091,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\motivate-test\7011\m0\10042025_7011_m0_eventsB.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\clickbait-motivate\8004\H1\10302025_8004_H1_eventsB.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -1202,7 +1243,7 @@ def process(value):
                     <gl:WrapT>Repeat</gl:WrapT>
                     <gl:MinFilter>Linear</gl:MinFilter>
                     <gl:MagFilter>Linear</gl:MagFilter>
-                    <gl:FileName>D:\clickbait-place\stimuli\1515_b5_binary_m2.mp4</gl:FileName>
+                    <gl:FileName>stimuli\triangle.mp4</gl:FileName>
                     <gl:FlipMode>Vertical</gl:FlipMode>
                     <gl:FrameCount xsi:nil="true" />
                     <gl:StartPosition>0</gl:StartPosition>
@@ -1252,7 +1293,7 @@ def process(value):
               <ipy:Script>@returns(float)
 def process(value):
     flip_state = value.Item1
-    if flip_state == 0:
+    if flip_state == 1:
       return -1.5
     else:
       return 1.5</ipy:Script>
@@ -1269,52 +1310,13 @@ def process(value):
               <Angle>0</Angle>
               <ExtentX>2.96</ExtentX>
               <ExtentY>2</ExtentY>
-              <LocationX>1.5</LocationX>
+              <LocationX>-1.5</LocationX>
               <LocationY>0</LocationY>
               <ScaleX>1</ScaleX>
               <ScaleY>1</ScaleY>
               <ShiftX>0</ShiftX>
               <ShiftY>0</ShiftY>
               <Layer>0</Layer>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="Combinator">
-                <Combinator xsi:type="gl:Timer">
-                  <gl:DueTime>PT0S</gl:DueTime>
-                  <gl:Period>PT5M</gl:Period>
-                </Combinator>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="PropertyMapping">
-                <PropertyMappings>
-                  <Property Name="Value" />
-                </PropertyMappings>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="Combinator">
-                <Combinator xsi:type="IntProperty">
-                  <Value>0</Value>
-                </Combinator>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="Mod">
-                <Operand xsi:type="WorkflowProperty" TypeArguments="sys:Int64">
-                  <Value>2</Value>
-                </Operand>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="SubscribeSubject">
-                <Name>Session Number</Name>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="Combinator">
-                <Combinator xsi:type="rx:WithLatestFrom" />
-              </Builder>
             </Expression>
           </Nodes>
           <Edges>
@@ -1329,11 +1331,6 @@ def process(value):
             <Edge From="10" To="11" Label="Source1" />
             <Edge From="11" To="12" Label="Source1" />
             <Edge From="12" To="13" Label="Source2" />
-            <Edge From="14" To="15" Label="Source1" />
-            <Edge From="15" To="16" Label="Source1" />
-            <Edge From="16" To="17" Label="Source1" />
-            <Edge From="17" To="19" Label="Source1" />
-            <Edge From="18" To="19" Label="Source2" />
           </Edges>
         </Workflow>
       </Expression>
@@ -1705,7 +1702,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>10042025</Value>
+          <Value>10302025</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1717,7 +1714,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="FloatProperty">
-          <Value>20</Value>
+          <Value>10</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1729,7 +1726,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>7011</Value>
+          <Value>8004</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1741,7 +1738,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>m0</Value>
+          <Value>H1</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1749,11 +1746,11 @@ def generate():
         <rx:BufferSize xsi:nil="true" />
       </Expression>
       <Expression xsi:type="ExternalizedMapping">
-        <Property Name="Value" DisplayName="Implant Type" />
+        <Property Name="Value" DisplayName="Experiment" />
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>motivate-test</Value>
+          <Value>clickbait-motivate</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1807,113 +1804,112 @@ def generate():
       </Expression>
     </Nodes>
     <Edges>
-      <Edge From="1" To="2" Label="Source1" />
+      <Edge From="1" To="4" Label="Source1" />
       <Edge From="2" To="3" Label="Source1" />
-      <Edge From="3" To="4" Label="Source1" />
+      <Edge From="3" To="4" Label="Source2" />
+      <Edge From="3" To="13" Label="Source3" />
+      <Edge From="3" To="28" Label="Source1" />
       <Edge From="4" To="5" Label="Source1" />
-      <Edge From="4" To="14" Label="Source1" />
-      <Edge From="4" To="30" Label="Source1" />
       <Edge From="5" To="6" Label="Source1" />
+      <Edge From="5" To="12" Label="Source1" />
       <Edge From="6" To="7" Label="Source1" />
       <Edge From="7" To="8" Label="Source1" />
       <Edge From="8" To="9" Label="Source1" />
+      <Edge From="8" To="11" Label="Source1" />
       <Edge From="9" To="10" Label="Source1" />
-      <Edge From="10" To="11" Label="Source1" />
-      <Edge From="11" To="12" Label="Source1" />
-      <Edge From="11" To="13" Label="Source1" />
-      <Edge From="12" To="15" Label="Source1" />
-      <Edge From="13" To="15" Label="Source2" />
-      <Edge From="14" To="15" Label="Source3" />
-      <Edge From="15" To="23" Label="Source1" />
-      <Edge From="16" To="17" Label="Source1" />
+      <Edge From="9" To="13" Label="Source1" />
+      <Edge From="11" To="13" Label="Source2" />
+      <Edge From="12" To="13" Label="Source5" />
+      <Edge From="13" To="21" Label="Source1" />
+      <Edge From="14" To="15" Label="Source1" />
+      <Edge From="15" To="16" Label="Source1" />
+      <Edge From="16" To="20" Label="Source1" />
       <Edge From="17" To="18" Label="Source1" />
-      <Edge From="18" To="22" Label="Source1" />
-      <Edge From="19" To="20" Label="Source1" />
-      <Edge From="20" To="21" Label="Source1" />
-      <Edge From="21" To="22" Label="Source2" />
-      <Edge From="22" To="23" Label="Source2" />
-      <Edge From="23" To="24" Label="Source1" />
+      <Edge From="18" To="19" Label="Source1" />
+      <Edge From="19" To="20" Label="Source2" />
+      <Edge From="20" To="21" Label="Source2" />
+      <Edge From="21" To="22" Label="Source1" />
+      <Edge From="22" To="23" Label="Source1" />
+      <Edge From="22" To="24" Label="Source1" />
+      <Edge From="22" To="39" Label="Source1" />
+      <Edge From="22" To="40" Label="Source1" />
+      <Edge From="22" To="42" Label="Source1" />
+      <Edge From="22" To="43" Label="Source1" />
+      <Edge From="22" To="44" Label="Source1" />
+      <Edge From="22" To="45" Label="Source1" />
+      <Edge From="22" To="50" Label="Source1" />
+      <Edge From="22" To="52" Label="Source1" />
+      <Edge From="22" To="55" Label="Source1" />
+      <Edge From="22" To="57" Label="Source1" />
+      <Edge From="22" To="59" Label="Source1" />
+      <Edge From="22" To="61" Label="Source1" />
+      <Edge From="22" To="62" Label="Source1" />
       <Edge From="24" To="25" Label="Source1" />
-      <Edge From="24" To="26" Label="Source1" />
-      <Edge From="24" To="41" Label="Source1" />
-      <Edge From="24" To="42" Label="Source1" />
-      <Edge From="24" To="44" Label="Source1" />
-      <Edge From="24" To="45" Label="Source1" />
-      <Edge From="24" To="46" Label="Source1" />
-      <Edge From="24" To="47" Label="Source1" />
-      <Edge From="24" To="52" Label="Source1" />
-      <Edge From="24" To="54" Label="Source1" />
-      <Edge From="24" To="57" Label="Source1" />
-      <Edge From="24" To="59" Label="Source1" />
-      <Edge From="24" To="61" Label="Source1" />
-      <Edge From="24" To="63" Label="Source1" />
-      <Edge From="24" To="64" Label="Source1" />
       <Edge From="26" To="27" Label="Source1" />
+      <Edge From="27" To="28" Label="Source2" />
       <Edge From="28" To="29" Label="Source1" />
-      <Edge From="29" To="30" Label="Source2" />
-      <Edge From="30" To="31" Label="Source1" />
+      <Edge From="29" To="30" Label="Source1" />
+      <Edge From="30" To="33" Label="Source1" />
+      <Edge From="30" To="37" Label="Source2" />
       <Edge From="31" To="32" Label="Source1" />
-      <Edge From="32" To="35" Label="Source1" />
-      <Edge From="32" To="39" Label="Source2" />
-      <Edge From="33" To="34" Label="Source1" />
-      <Edge From="34" To="35" Label="Source2" />
-      <Edge From="36" To="38" Label="Source1" />
-      <Edge From="37" To="38" Label="Source2" />
-      <Edge From="38" To="39" Label="Source1" />
-      <Edge From="39" To="40" Label="Source1" />
-      <Edge From="41" To="48" Label="Source1" />
-      <Edge From="41" To="65" Label="Source3" />
-      <Edge From="42" To="43" Label="Source1" />
-      <Edge From="43" To="48" Label="Source2" />
-      <Edge From="44" To="48" Label="Source3" />
-      <Edge From="45" To="48" Label="Source4" />
-      <Edge From="46" To="48" Label="Source5" />
-      <Edge From="47" To="48" Label="Source6" />
-      <Edge From="48" To="51" Label="Source1" />
-      <Edge From="49" To="50" Label="Source1" />
-      <Edge From="50" To="51" Label="Source2" />
+      <Edge From="32" To="33" Label="Source2" />
+      <Edge From="34" To="36" Label="Source1" />
+      <Edge From="35" To="36" Label="Source2" />
+      <Edge From="36" To="37" Label="Source1" />
+      <Edge From="37" To="38" Label="Source1" />
+      <Edge From="39" To="46" Label="Source1" />
+      <Edge From="39" To="63" Label="Source3" />
+      <Edge From="40" To="41" Label="Source1" />
+      <Edge From="41" To="46" Label="Source2" />
+      <Edge From="42" To="46" Label="Source3" />
+      <Edge From="43" To="46" Label="Source4" />
+      <Edge From="44" To="46" Label="Source5" />
+      <Edge From="45" To="46" Label="Source6" />
+      <Edge From="46" To="49" Label="Source1" />
+      <Edge From="47" To="48" Label="Source1" />
+      <Edge From="48" To="49" Label="Source2" />
+      <Edge From="50" To="51" Label="Source1" />
+      <Edge From="50" To="69" Label="Source1" />
       <Edge From="52" To="53" Label="Source1" />
-      <Edge From="52" To="71" Label="Source1" />
-      <Edge From="54" To="55" Label="Source1" />
-      <Edge From="54" To="56" Label="Source1" />
-      <Edge From="54" To="71" Label="Source2" />
+      <Edge From="52" To="54" Label="Source1" />
+      <Edge From="52" To="69" Label="Source2" />
+      <Edge From="55" To="56" Label="Source1" />
+      <Edge From="55" To="69" Label="Source3" />
       <Edge From="57" To="58" Label="Source1" />
-      <Edge From="57" To="71" Label="Source3" />
+      <Edge From="57" To="69" Label="Source4" />
       <Edge From="59" To="60" Label="Source1" />
-      <Edge From="59" To="71" Label="Source4" />
-      <Edge From="61" To="62" Label="Source1" />
-      <Edge From="61" To="71" Label="Source5" />
-      <Edge From="63" To="65" Label="Source1" />
-      <Edge From="64" To="65" Label="Source2" />
+      <Edge From="59" To="69" Label="Source5" />
+      <Edge From="61" To="63" Label="Source1" />
+      <Edge From="62" To="63" Label="Source2" />
+      <Edge From="63" To="64" Label="Source1" />
+      <Edge From="64" To="67" Label="Source1" />
       <Edge From="65" To="66" Label="Source1" />
-      <Edge From="66" To="69" Label="Source1" />
-      <Edge From="67" To="68" Label="Source1" />
-      <Edge From="68" To="69" Label="Source2" />
-      <Edge From="70" To="71" Label="Source6" />
-      <Edge From="71" To="74" Label="Source1" />
-      <Edge From="72" To="73" Label="Source1" />
-      <Edge From="73" To="74" Label="Source2" />
-      <Edge From="78" To="79" Label="Source1" />
+      <Edge From="66" To="67" Label="Source2" />
+      <Edge From="68" To="69" Label="Source6" />
+      <Edge From="69" To="72" Label="Source1" />
+      <Edge From="70" To="71" Label="Source1" />
+      <Edge From="71" To="72" Label="Source2" />
+      <Edge From="76" To="77" Label="Source1" />
+      <Edge From="77" To="78" Label="Source1" />
       <Edge From="79" To="80" Label="Source1" />
-      <Edge From="81" To="82" Label="Source1" />
+      <Edge From="80" To="81" Label="Source1" />
       <Edge From="82" To="83" Label="Source1" />
-      <Edge From="84" To="85" Label="Source1" />
+      <Edge From="83" To="84" Label="Source1" />
       <Edge From="85" To="86" Label="Source1" />
-      <Edge From="87" To="88" Label="Source1" />
+      <Edge From="86" To="87" Label="Source1" />
       <Edge From="88" To="89" Label="Source1" />
-      <Edge From="90" To="91" Label="Source1" />
+      <Edge From="89" To="90" Label="Source1" />
       <Edge From="91" To="92" Label="Source1" />
-      <Edge From="93" To="94" Label="Source1" />
-      <Edge From="94" To="102" Label="Source1" />
-      <Edge From="95" To="102" Label="Source2" />
-      <Edge From="96" To="102" Label="Source3" />
-      <Edge From="97" To="102" Label="Source4" />
-      <Edge From="98" To="102" Label="Source5" />
-      <Edge From="99" To="102" Label="Source6" />
-      <Edge From="100" To="102" Label="Source7" />
-      <Edge From="101" To="102" Label="Source8" />
-      <Edge From="102" To="103" Label="Source1" />
-      <Edge From="103" To="104" Label="Source1" />
+      <Edge From="92" To="100" Label="Source1" />
+      <Edge From="93" To="100" Label="Source2" />
+      <Edge From="94" To="100" Label="Source3" />
+      <Edge From="95" To="100" Label="Source4" />
+      <Edge From="96" To="100" Label="Source5" />
+      <Edge From="97" To="100" Label="Source6" />
+      <Edge From="98" To="100" Label="Source7" />
+      <Edge From="99" To="100" Label="Source8" />
+      <Edge From="100" To="101" Label="Source1" />
+      <Edge From="101" To="102" Label="Source1" />
     </Edges>
   </Workflow>
 </WorkflowBuilder>
