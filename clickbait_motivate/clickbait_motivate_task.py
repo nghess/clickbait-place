@@ -334,7 +334,7 @@ max_targets_per_cell = 5
 
 # Flip state parameters
 FLIP_STATE_CONFIG = {
-    'min_trials_before_flip': 5,    # Minimum trials before state flip
+    'min_trials_before_flip': 4,    # Minimum trials before state flip
     'max_trials_before_flip': 10,   # Maximum trials before state flip
 }
 
@@ -353,7 +353,7 @@ DISTRIBUTION_CONFIG_STATE_0 = {
     
     # Log-space standard deviations (for log-normal axes)
     'log_sigma_x': 0.5,  # 0.2-0.4: tight, 0.5: moderate, 0.8-1.2: fat tails
-    'log_sigma_y': 0.25,  # 0.2-0.4: tight, 0.5: moderate, 0.8-1.2: fat tails
+    'log_sigma_y': 0.7,  # 0.2-0.4: tight, 0.5: moderate, 0.8-1.2: fat tails
     'flip_log_y': False,  # Normal log-normal for state 0
 }
 
@@ -367,7 +367,7 @@ DISTRIBUTION_CONFIG_STATE_1 = {
     
     'log_normal': 'y',
     'log_sigma_x': 0.5,
-    'log_sigma_y': 0.25,   # Same parameters as state 0
+    'log_sigma_y': 0.7,   # Same parameters as state 0
     'flip_log_y': True,   # Flip the log-normal distribution
 }
 
@@ -472,7 +472,7 @@ def process(value):
     reward_duration_right = 0.032
     click_duration = 0.1
     iti_duration_min = 1.0
-    iti_duration_max = 5.0
+    iti_duration_max = 3.0
     withdrawal_duration = 0.5
     
     # Flag to track if target was found in this frame

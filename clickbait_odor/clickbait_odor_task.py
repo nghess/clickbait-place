@@ -34,23 +34,91 @@ def get_image_shape(img):
     size = img.Size
     return [size.Width, size.Height]
 
+# Modified function to visualize the target distribution without using Rgba
+def draw_target_distribution(target_distribution, grid, img, max_intensity=255):
+    # First find the maximum probability in the distribution (for normalization)
+    if sum(target_distribution) > 0:
+        max_prob = max(target_distribution)
+    else:
+        max_prob = 1.0  # Default if distribution is empty
+    
+    # Create a temporary overlay image
+    overlay = create_blank_canvas(img.Size.Width, img.Size.Height)
+    
+    # Create a color for each cell based on its probability
+    for i, prob in enumerate(target_distribution):
+        if prob > 0 and i < len(grid.cells):
+            # Calculate normalized probability (0-1)
+            norm_prob = prob / max_prob
+            
+            # Calculate intensity based on probability (brighter = higher probability)
+            intensity = int(norm_prob * max_intensity)
+            
+            # Use a red color with intensity proportional to probability
+            dist_color = Scalar.Rgb(intensity, 0, 0)
+            
+            # Draw rectangle with color intensity showing probability
+            cell = grid.cells[i]
+            CV.Rectangle(overlay, cell[0], cell[1], dist_color, thickness=-1)
+    
+    # Blend the overlay with the original image
+    # We'll use a simple blend - add the images and clip values
+    alpha = 0.5  # Blend factor (adjust for transparency effect)
+    CV.AddWeighted(img, 1.0, overlay, alpha, 0.0, img)
+    
+    return img
+
+# Global variable to store initial target counts per cell
+global initial_cell_counts
+global max_initial_count
+initial_cell_counts = {}
+max_initial_count = 1  # Default to 1 to avoid division by zero
+
 def draw_future_targets(target_queue, grid, img):
-    """Draw upcoming random targets from the queue. Each cell appears at most once."""
+    # Create a combined list with current queue and active target for visualization
     all_targets = list(target_queue)
 
     if not all_targets:
         return img
 
+    # Create a temporary overlay image
     overlay = create_blank_canvas(img.Size.Width, img.Size.Height)
 
-    # With uniform distribution, each cell appears at most once — fixed intensity
-    target_future_color = Scalar.Rgb(0, 150, 150)  # Cyan
-
+    # Count occurrences of each cell in the combined list
+    cell_counts = {}
     for cell_idx in all_targets:
+        if cell_idx in cell_counts:
+            cell_counts[cell_idx] += 1
+        else:
+            cell_counts[cell_idx] = 1
+
+    # Hard-code the intensity range to match the expected counts (1-5)
+    min_possible_count = 1
+    max_possible_count = 5
+    
+    # Define base and range for intensity scaling
+    base_intensity = 50
+    intensity_range = 205  # from 50 to 255
+    
+    # Draw each cell with brightness proportional to count
+    for cell_idx, count in cell_counts.items():
         if cell_idx < len(grid.cells):
+            # Clamp count to our expected range just in case
+            clamped_count = max(min_possible_count, min(count, max_possible_count))
+            
+            # Calculate normalized position in range [0-1]
+            normalized_position = (clamped_count - min_possible_count) / float(max_possible_count - min_possible_count)
+            
+            # Calculate intensity based on position in range
+            intensity = base_intensity + int(normalized_position * intensity_range)
+            
+            # Use a brighter, more distinct color
+            target_future_color = Scalar.Rgb(0, intensity, intensity)  # Cyan
+
             cell = grid.cells[cell_idx]
             CV.Rectangle(overlay, cell[0], cell[1], target_future_color, thickness=-1)
 
+    # Blend overlay with image
     alpha = 0.5
     CV.AddWeighted(img, 1.0, overlay, alpha, 0.0, img)
 
@@ -98,68 +166,91 @@ def create_blank_canvas(width, height, channels=3, color=(0, 0, 0)):
 """
 Define targets
 """
+# Modified to generate targets deterministically based on probability distribution
+def generate_targets(grid_cells_x, grid_cells_y, max_targets_per_cell=5, shuffle=True):
+    # Initialize target distribution array
+    possible_targets = (grid_cells_x-2) * (grid_cells_y-2)
+    
+    # Create a 2D array to store probability distribution
+    base_distribution = [0] * possible_targets
+    
+    # Calculate centers (mean) of the grid
+    center_x = (grid_cells_x - 3) / 2.0
+    center_y = (grid_cells_y - 3) / 2.0
+    
+    # Standard deviation - adjust these values to control spread
+    sigma_x = (grid_cells_x - 2) / 3.0
+    sigma_y = (grid_cells_y - 2) / 3.0
+    
+    # Generate normal distribution of probabilities
+    for y in range(grid_cells_y - 2):
+        for x in range(grid_cells_x - 2):
+            index = y * (grid_cells_x - 2) + x
+            
+            # Calculate distance from center using normal distribution
+            px = math.exp(-0.5 * ((x - center_x) / sigma_x) ** 2)
+            py = math.exp(-0.5 * ((y - center_y) / sigma_y) ** 2)
+            
+            # Combined probability
+            base_distribution[index] = px * py
+    
+    # Normalize distribution so it sums to 1
+    total_prob = sum(base_distribution)
+    base_distribution = [p / total_prob for p in base_distribution]
+    
+    # Find max probability for scaling
+    max_prob = max(base_distribution)
+    
+    # Quantize probabilities into discrete target counts (1 to max_targets_per_cell)
+    target_counts = {}
+    total_targets = 0
+    
+    for i, prob in enumerate(base_distribution):
+        # Scale to [1, max_targets_per_cell] range
+        # Cells with the highest probability get max_targets_per_cell targets
+        # All cells get at least 1 target
+        scaled_targets = 1 + int((prob / max_prob) * (max_targets_per_cell - 1))
+        target_counts[i] = scaled_targets
+        total_targets += scaled_targets
+    
+    # Create a flat target queue with the appropriate number of targets per cell
+    target_queue = []
+    for cell_idx, count in target_counts.items():
+        for _ in range(count):
+            target_queue.append(cell_idx)
+    
+    if shuffle:
+        random.shuffle(target_queue)
 
-def compute_center_cell(grid_cells_x, grid_cells_y):
-    """Compute the index of the centermost inner-grid cell.
+    # Set the first active target
+    active_target = None
+    if target_queue:
+        active_target = target_queue[0]
+        target_queue = target_queue[1:]  # Remove active target from queue
     
-    Inner grid has (grid_cells_x - 2) columns and (grid_cells_y - 2) rows.
-    With odd inner dimensions the center is unique.
-    """
-    inner_cols = grid_cells_x - 2
-    inner_rows = grid_cells_y - 2
-    center_col = inner_cols // 2
-    center_row = inner_rows // 2
-    return center_row * inner_cols + center_col
+    # Store initial cell counts for visualization
+    global initial_cell_counts
+    global max_initial_count
+    initial_cell_counts = target_counts.copy()
+    max_initial_count = max_targets_per_cell
+    
+    return grid_cells_x, grid_cells_y, target_queue, base_distribution, active_target
 
-def generate_targets(grid_cells_x, grid_cells_y):
-    """Generate a shuffled queue of all non-center cell indices (one per cell).
+# Draw targets and distribution
+def draw_targets(active_target, target_queue, grid, img, draw_distribution=False, draw_future=False):
+    # First draw distribution if enabled
+    if draw_distribution:
+        img = draw_target_distribution(target_distribution, grid, img)
     
-    Returns (center_cell_index, target_queue, active_target).
-    active_target is the first item popped from the queue.
-    """
-    inner_cols = grid_cells_x - 2
-    inner_rows = grid_cells_y - 2
-    total_cells = inner_cols * inner_rows
-    center_cell = compute_center_cell(grid_cells_x, grid_cells_y)
-    
-    # All inner cells except the center, one visit each
-    all_cells = [i for i in range(total_cells) if i != center_cell]
-    random.shuffle(all_cells)
-    
-    # Pop the first target
-    active_target = all_cells[0]
-    target_queue = all_cells[1:]
-    
-    return center_cell, target_queue, active_target
-
-def regenerate_queue(grid_cells_x, grid_cells_y, center_cell):
-    """Re-shuffle a fresh full set of non-center targets and pop the first one."""
-    inner_cols = grid_cells_x - 2
-    inner_rows = grid_cells_y - 2
-    total_cells = inner_cols * inner_rows
-    
-    all_cells = [i for i in range(total_cells) if i != center_cell]
-    random.shuffle(all_cells)
-    
-    active_target = all_cells[0]
-    target_queue = all_cells[1:]
-    return target_queue, active_target
-
-# Draw targets
-def draw_targets(active_target, target_queue, grid, img, trial_phase, draw_future=False):
-    # Draw future random target locations if enabled
+    # Draw future target locations if enabled
     if draw_future:
         img = draw_future_targets(target_queue, grid, img)
     
-    # Draw the active target
+    # Then draw the active target
     if active_target is not None and active_target < len(grid.cells):
+        # Draw the active target
         cell = grid.cells[active_target]
-        # Use different color for center target vs random target
-        if trial_phase == "center":
-            color = center_target_color
-        else:
-            color = target_color
-        CV.Rectangle(img, cell[0], cell[1], color, thickness=-1)
+        CV.Rectangle(img, cell[0], cell[1], target_color, thickness=-1)
     
     return img
 
@@ -167,20 +258,22 @@ def draw_targets(active_target, target_queue, grid, img, trial_phase, draw_futur
 grid_x = 7
 grid_y = 15
 
+# Define maximum targets per cell (quantization steps)
+max_targets_per_cell = 5
+
+# Initialize global variables
+global target_queue  # Queue of upcoming targets
+global active_target  # Currently active target
+global target_distribution  # Normalized distribution for visualization
+
 # Initialize grid dimensions explicitly
 global grid_cells_x
 global grid_cells_y
 grid_cells_x = grid_x
 grid_cells_y = grid_y
 
-# Initialize target landscape: uniform, one per non-center cell
-global center_cell_index
-global target_queue
-global active_target
-global trial_phase
-
-center_cell_index, target_queue, active_target = generate_targets(grid_cells_x, grid_cells_y)
-trial_phase = "random"  # Each trial starts seeking the random target
+# Initialize target landscape with deterministic distribution
+_, _, target_queue, target_distribution, active_target = generate_targets(grid_cells_x, grid_cells_y, max_targets_per_cell)
 
 """
 Global variables
@@ -201,7 +294,7 @@ global reward_right_start_time
 trial_count = 0
 reward_left_count = 0
 reward_right_count = 0
-reward_state = False
+reward_state = True
 click = False
 click_start_time = 0
 drinking = False
@@ -232,8 +325,7 @@ prev_poke_right = False
 """
 centroid_color = Scalar.Rgb(255, 255, 255)
 mouse_loc_color = Scalar.Rgb(255, 0, 0)
-target_color = Scalar.Rgb(255, 255, 255)          # Random target: white
-center_target_color = Scalar.Rgb(255, 255, 0)     # Center target: yellow
+target_color = Scalar.Rgb(255, 255, 255)
 grid_color = Scalar.Rgb(128, 128, 128)
 centroid_radius = 5
 
@@ -249,8 +341,7 @@ def process(value):
     global reward_right_count
     global target_queue
     global active_target
-    global center_cell_index
-    global trial_phase
+    global target_distribution
     global reward_state
     global click
     global click_start_time
@@ -291,30 +382,23 @@ def process(value):
     grid = GridMaze(img_dims, [grid_cells_x, grid_cells_y])
     canvas = create_blank_canvas(img_dims[0], img_dims[1])
     
-    # Draw targets (future overlay only shown during random phase)
-    draw_targets(active_target, target_queue, grid, canvas, trial_phase,
-                 draw_future=(trial_phase == "random"))
+    # Draw targets and distribution
+    draw_targets(active_target, target_queue, grid, canvas, draw_distribution=False, draw_future=True)
 
     # Process mouse position and check for target
     if not (math.isnan(centroid_x) or math.isnan(centroid_y)):
         grid_loc_x, grid_loc_y, target_found_this_frame = get_grid_location(grid, centroid_x, centroid_y, active_target, canvas)
         CV.Circle(canvas, Point(int(centroid_x), int(centroid_y)), centroid_radius, centroid_color, -1)
         
-        # Two-target trial logic
-        if target_found_this_frame and active_target is not None and not reward_state and not in_iti and not in_withdrawal_period:
-            if trial_phase == "random":
-                # Random target found -> click, switch to center target
-                click = True
-                click_start_time = current_time
-                active_target = center_cell_index
-                trial_phase = "center"
-                
-            elif trial_phase == "center":
-                # Center target found -> click, enable reward
-                click = True
-                click_start_time = current_time
-                active_target = None
-                reward_state = True
+        # If target found and we're not in reward state yet
+        if target_found_this_frame and active_target is not None and not reward_state:
+            # Remove the found target
+            active_target = None
+            
+            # Trigger reward state
+            reward_state = True
+            click = True
+            click_start_time = current_time
 
     # State machine logic
     if in_iti:
@@ -322,15 +406,10 @@ def process(value):
             trial_count += 1
             in_iti = False
             
-            # Start next trial: pop next random target from queue
-            if target_queue:
+            # Set next target if we need to (only if active target is None)
+            if active_target is None and target_queue:
                 active_target = target_queue[0]
                 target_queue = target_queue[1:]
-            else:
-                # Queue exhausted — re-shuffle full set
-                target_queue, active_target = regenerate_queue(grid_cells_x, grid_cells_y, center_cell_index)
-            
-            trial_phase = "random"
             
     elif in_withdrawal_period:
         if not (poke_left or poke_right):  # Mouse has withdrawn
@@ -370,7 +449,10 @@ def process(value):
     prev_poke_left, prev_poke_right = poke_left, poke_right
     drinking = poke_left or poke_right
 
+    # Convert target_queue to tuple for return
+    queue_tuple = tuple(target_queue) if target_queue else tuple()
+    
     # Return values
     return (canvas, Point(centroid_x, centroid_y), reward_state, reward_left, reward_right, 
             poke_left, poke_right, drinking, in_iti, click, active_target, 
-            trial_count, reward_left_count, reward_right_count, trial_phase)
+            trial_count, reward_left_count, reward_right_count, tuple(target_distribution))
