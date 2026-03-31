@@ -10,6 +10,7 @@ Target locations are drawn from configurable spatial probability distributions (
   - `Bonsai.Arduino` — digital/analog I/O for reward delivery and sensors
   - `Bonsai.Scripting.IronPython` — embedded Python task logic
   - `Bonsai.Vision` / `OpenCV.Net` — image acquisition and processing
+  - `BonVision` — Visual stimulus presentation
   - `Bonsai.Pylon` or `Bonsai.PointGrey` — camera drivers (rig-dependent)
   - `Bonsai.DAQmx` — analog input for sniff/poke sensors
 - Arduino microcontroller (water solenoids, air valves, analog sensors)
@@ -50,24 +51,24 @@ Target locations are drawn from configurable spatial probability distributions (
 
 ```
 clickbait-place/
-├── clickbait_motivate/           # Primary task workflow
-├── clickbait_motivate_sleap/     # SLEAP pose-estimation variant
-├── clickbait_motivate_sleap_timer/
-├── clickbait_odor/               # Odor-cued variant
-├── clickbait_behavior_3port/     # Three-port FMON variant
-├── clickbait_dry_morris_maze/    # Virtual Morris maze
-├── clickbait_anemo/              # Open-field recording
+├── clickbait_motivate/                 # Primary task workflow
+├── clickbait_motivate_sleap/           # SLEAP pose-estimation variant
+├── clickbait_motivate_sleap_timer/     # Trials time out after (5) seconds;
+├── clickbait_odor/                     # Odor-cued variant
+├── clickbait_behavior_3port/           # Three-port FMON variant
+├── clickbait_dry_morris_maze/          # Virtual Morris maze
+├── clickbait_anemo/                    # "Wind cued" variant
 ├── clickbait_anemo_lognormal/
-├── clickbait_master/             # Place-field recording
-├── utils/                        # Hardware configs and test workflows
-│   ├── acA2040-90umNIR_24714376.pfs   # Basler camera profile
-│   ├── cbp_openephys.config           # OpenEphys 32ch tetrode config
-│   ├── normal_distribution_viewer.py  # Distribution visualization utility
-│   ├── fan_test/                 # Test Arduino PWM output
-│   └── pin_test/                 # Test Arduino digital output
-│   └── water_calibration/        # Calibrate water reward volume
-│   └── water_flush/              # Flush tubes with button press
-└── wip/                          # Work-in-progress refactors
+├── clickbait_master/                   # Place-field recording
+├── utils/                              # Hardware configs and test workflows
+│   ├── acA2040-90umNIR_24714376.pfs    # Basler camera profile
+│   ├── cbp_openephys.config            # OpenEphys 32ch tetrode config
+│   ├── normal_distribution_viewer.py   # Distribution visualization utility
+│   ├── fan_test/                       # Test Arduino PWM output
+│   └── pin_test/                       # Test Arduino digital output
+│   └── water_calibration/              # Calibrate water reward volume
+│   └── water_flush/                    # Flush tubes with button press
+└── wip/                                # Work-in-progress refactors
     └── clickbait-refactor-063025/
 ```
 

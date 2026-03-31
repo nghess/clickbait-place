@@ -1,43 +1,43 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<WorkflowBuilder Version="2.8.5"
+<WorkflowBuilder Version="2.9.0"
                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                 xmlns:ard="clr-namespace:Bonsai.Arduino;assembly=Bonsai.Arduino"
-                 xmlns:pylon="clr-namespace:Bonsai.Pylon;assembly=Bonsai.Pylon"
-                 xmlns:cv="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision"
+                 xmlns:p1="clr-namespace:Bonsai.Arduino;assembly=Bonsai.Arduino"
+                 xmlns:p2="clr-namespace:Bonsai.Pylon;assembly=Bonsai.Pylon"
+                 xmlns:p3="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision"
                  xmlns:rx="clr-namespace:Bonsai.Reactive;assembly=Bonsai.Core"
-                 xmlns:io="clr-namespace:Bonsai.IO;assembly=Bonsai.System"
-                 xmlns:ipy="clr-namespace:Bonsai.Scripting.IronPython;assembly=Bonsai.Scripting.IronPython"
-                 xmlns:gl="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
+                 xmlns:p4="clr-namespace:Bonsai.IO;assembly=Bonsai.System"
+                 xmlns:p5="clr-namespace:Bonsai.Scripting.IronPython;assembly=Bonsai.Scripting.IronPython"
+                 xmlns:p6="clr-namespace:Bonsai.Shaders;assembly=Bonsai.Shaders"
                  xmlns:sys="clr-namespace:System;assembly=mscorlib"
-                 xmlns:res="clr-namespace:Bonsai.Resources;assembly=Bonsai.System"
+                 xmlns:p7="clr-namespace:Bonsai.Resources;assembly=Bonsai.System"
                  xmlns="https://bonsai-rx.org/2018/workflow">
   <Workflow>
     <Nodes>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="ard:CreateArduino">
-          <ard:Name>Arduino Mega 2560</ard:Name>
-          <ard:PortName>COM3</ard:PortName>
-          <ard:BaudRate>57600</ard:BaudRate>
-          <ard:SamplingInterval>19</ard:SamplingInterval>
+        <Combinator xsi:type="p1:CreateArduino">
+          <p1:Name>Arduino Mega 2560</p1:Name>
+          <p1:PortName>COM3</p1:PortName>
+          <p1:BaudRate>57600</p1:BaudRate>
+          <p1:SamplingInterval>19</p1:SamplingInterval>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="pylon:PylonCapture">
-          <pylon:SerialNumber>24714376</pylon:SerialNumber>
-          <pylon:ParameterFile>acA2040-90umNIR_24714376.pfs</pylon:ParameterFile>
-          <pylon:GrabStrategy>OneByOne</pylon:GrabStrategy>
+        <Combinator xsi:type="p2:PylonCapture">
+          <p2:SerialNumber>24714376</p2:SerialNumber>
+          <p2:ParameterFile>acA2040-90umNIR_24714376.pfs</p2:ParameterFile>
+          <p2:GrabStrategy>OneByOne</p2:GrabStrategy>
         </Combinator>
       </Expression>
       <Expression xsi:type="MemberSelector">
         <Selector>Image</Selector>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="cv:Flip">
-          <cv:Mode>Vertical</cv:Mode>
+        <Combinator xsi:type="p3:Flip">
+          <p3:Mode>Vertical</p3:Mode>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="cv:Grayscale" />
+        <Combinator xsi:type="p3:Grayscale" />
       </Expression>
       <Expression xsi:type="SubscribeSubject">
         <Name>VideoFilename</Name>
@@ -48,18 +48,18 @@
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="cv:VideoWriter">
-          <cv:FileName>D:\clickbait-place\data\tetrode_ob-hc\lognormal-flip1111111111\04\05252025_lognormal-flip1111111111_04.avi</cv:FileName>
-          <cv:Suffix>None</cv:Suffix>
-          <cv:Buffered>true</cv:Buffered>
-          <cv:Overwrite>false</cv:Overwrite>
-          <cv:FourCC>FMP4</cv:FourCC>
-          <cv:FrameRate>30</cv:FrameRate>
-          <cv:FrameSize>
-            <cv:Width>0</cv:Width>
-            <cv:Height>0</cv:Height>
-          </cv:FrameSize>
-          <cv:ResizeInterpolation>NearestNeighbor</cv:ResizeInterpolation>
+        <Combinator xsi:type="p3:VideoWriter">
+          <p3:FileName>D:\clickbait-place\data\tetrode_ob-hc\lognormal-flip1111111111\04\05252025_lognormal-flip1111111111_04.avi</p3:FileName>
+          <p3:Suffix>None</p3:Suffix>
+          <p3:Buffered>true</p3:Buffered>
+          <p3:Overwrite>false</p3:Overwrite>
+          <p3:FourCC>FMP4</p3:FourCC>
+          <p3:FrameRate>30</p3:FrameRate>
+          <p3:FrameSize>
+            <p3:Width>0</p3:Width>
+            <p3:Height>0</p3:Height>
+          </p3:FrameSize>
+          <p3:ResizeInterpolation>NearestNeighbor</p3:ResizeInterpolation>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
@@ -76,12 +76,12 @@
           <Property Name="FileName" />
         </PropertyMappings>
       </Expression>
-      <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\lognormal-flip1111111111\04\05252025_lognormal-flip1111111111_04_video_timestamp.csv</io:FileName>
-        <io:Append>false</io:Append>
-        <io:Overwrite>false</io:Overwrite>
-        <io:Suffix>None</io:Suffix>
-        <io:IncludeHeader>false</io:IncludeHeader>
+      <Expression xsi:type="p4:CsvWriter">
+        <p4:FileName>D:\clickbait-place\data\tetrode_ob-hc\lognormal-flip1111111111\04\05252025_lognormal-flip1111111111_04_video_timestamp.csv</p4:FileName>
+        <p4:Append>false</p4:Append>
+        <p4:Overwrite>false</p4:Overwrite>
+        <p4:Suffix>None</p4:Suffix>
+        <p4:IncludeHeader>false</p4:IncludeHeader>
       </Expression>
       <Expression xsi:type="SubscribeSubject">
         <Name>SessionStart</Name>
@@ -95,9 +95,9 @@
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="rx:CombineLatest" />
       </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>Session Timer</ipy:Name>
-        <ipy:Script>import clr
+      <Expression xsi:type="p5:PythonTransform">
+        <p5:Name>Session Timer</p5:Name>
+        <p5:Script>import clr
 clr.AddReference("System.Windows.Forms")
 from System.Windows.Forms import SendKeys
 from System.Diagnostics import Process
@@ -142,27 +142,27 @@ def process(value):
         SendKeys.SendWait("+{F5}")
 
     return countdown
-</ipy:Script>
+</p5:Script>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="cv:Smooth">
-          <cv:SmoothType>Gaussian</cv:SmoothType>
-          <cv:Size1>27</cv:Size1>
-          <cv:Size2>27</cv:Size2>
-          <cv:Sigma1>20</cv:Sigma1>
-          <cv:Sigma2>20</cv:Sigma2>
+        <Combinator xsi:type="p3:Smooth">
+          <p3:SmoothType>Gaussian</p3:SmoothType>
+          <p3:Size1>27</p3:Size1>
+          <p3:Size2>27</p3:Size2>
+          <p3:Sigma1>20</p3:Sigma1>
+          <p3:Sigma2>20</p3:Sigma2>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="cv:Threshold">
-          <cv:ThresholdValue>60</cv:ThresholdValue>
-          <cv:MaxValue>255</cv:MaxValue>
-          <cv:ThresholdType>Binary</cv:ThresholdType>
+        <Combinator xsi:type="p3:Threshold">
+          <p3:ThresholdValue>60</p3:ThresholdValue>
+          <p3:MaxValue>255</p3:MaxValue>
+          <p3:ThresholdType>Binary</p3:ThresholdType>
         </Combinator>
       </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>Invert Image</ipy:Name>
-        <ipy:Script>import clr
+      <Expression xsi:type="p5:PythonTransform">
+        <p5:Name>Invert Image</p5:Name>
+        <p5:Script>import clr
 clr.AddReference("OpenCV.Net")
 from OpenCV.Net import *
 
@@ -170,28 +170,28 @@ from OpenCV.Net import *
 def process(value):
 
   image = 255-value
-  return image</ipy:Script>
+  return image</p5:Script>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="cv:FindContours">
-          <cv:Mode>External</cv:Mode>
-          <cv:Method>ChainApproxSimple</cv:Method>
-          <cv:Offset>
-            <cv:X>0</cv:X>
-            <cv:Y>0</cv:Y>
-          </cv:Offset>
-          <cv:MinArea>12</cv:MinArea>
-          <cv:MaxArea xsi:nil="true" />
+        <Combinator xsi:type="p3:FindContours">
+          <p3:Mode>External</p3:Mode>
+          <p3:Method>ChainApproxSimple</p3:Method>
+          <p3:Offset>
+            <p3:X>0</p3:X>
+            <p3:Y>0</p3:Y>
+          </p3:Offset>
+          <p3:MinArea>12</p3:MinArea>
+          <p3:MaxArea xsi:nil="true" />
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="cv:BinaryRegionAnalysis" />
+        <Combinator xsi:type="p3:BinaryRegionAnalysis" />
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="cv:LargestBinaryRegion" />
+        <Combinator xsi:type="p3:LargestBinaryRegion" />
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="cv:Centroid" />
+        <Combinator xsi:type="p3:Centroid" />
       </Expression>
       <Expression xsi:type="MemberSelector">
         <Selector>X</Selector>
@@ -200,17 +200,17 @@ def process(value):
         <Selector>Y</Selector>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="cv:ConvertColor">
-          <cv:Conversion>Gray2Bgr</cv:Conversion>
+        <Combinator xsi:type="p3:ConvertColor">
+          <p3:Conversion>Gray2Bgr</p3:Conversion>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="rx:Zip" />
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="ard:AnalogInput">
-          <ard:PortName>Arduino Mega 2560</ard:PortName>
-          <ard:Pin>0</ard:Pin>
+        <Combinator xsi:type="p1:AnalogInput">
+          <p1:PortName>Arduino Mega 2560</p1:PortName>
+          <p1:Pin>0</p1:Pin>
         </Combinator>
       </Expression>
       <Expression xsi:type="LessThan">
@@ -222,9 +222,9 @@ def process(value):
         <Name>Poke Left</Name>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="ard:AnalogInput">
-          <ard:PortName>Arduino Mega 2560</ard:PortName>
-          <ard:Pin>8</ard:Pin>
+        <Combinator xsi:type="p1:AnalogInput">
+          <p1:PortName>Arduino Mega 2560</p1:PortName>
+          <p1:Pin>8</p1:Pin>
         </Combinator>
       </Expression>
       <Expression xsi:type="LessThan">
@@ -241,9 +241,9 @@ def process(value):
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="rx:WithLatestFrom" />
       </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>Clickbait Task</ipy:Name>
-        <ipy:Script>import clr
+      <Expression xsi:type="p5:PythonTransform">
+        <p5:Name>Clickbait Task</p5:Name>
+        <p5:Script>import clr
 clr.AddReference("OpenCV.Net")
 clr.AddReference("System")
 from OpenCV.Net import *
@@ -826,11 +826,11 @@ def process(value):
     # Return values (added flip_state at the end)
     return (canvas, Point(centroid_x, centroid_y), reward_state, reward_left, reward_right, 
             poke_left, poke_right, drinking, in_iti, click, active_target, 
-            trial_count, reward_left_count, reward_right_count, tuple(target_distribution), flip_state)</ipy:Script>
+            trial_count, reward_left_count, reward_right_count, tuple(target_distribution), flip_state)</p5:Script>
       </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>Grid Visualization</ipy:Name>
-        <ipy:Script>import clr
+      <Expression xsi:type="p5:PythonTransform">
+        <p5:Name>Grid Visualization</p5:Name>
+        <p5:Script>import clr
 clr.AddReference("OpenCV.Net")
 clr.AddReference("System")
 from OpenCV.Net import *
@@ -839,15 +839,15 @@ from OpenCV.Net import *
 def process(value):
   return value[0]
 
-</ipy:Script>
+</p5:Script>
       </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>Trial Count</ipy:Name>
-        <ipy:Script># Get trial count
+      <Expression xsi:type="p5:PythonTransform">
+        <p5:Name>Trial Count</p5:Name>
+        <p5:Script># Get trial count
 
 @returns(int)
 def process(value):
-  return value[-3]</ipy:Script>
+  return value[-3]</p5:Script>
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="rx:Timestamp" />
@@ -855,34 +855,34 @@ def process(value):
       <Expression xsi:type="MemberSelector">
         <Selector>Timestamp.DateTime</Selector>
       </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>Poke Left</ipy:Name>
-        <ipy:Script># Poke left status
+      <Expression xsi:type="p5:PythonTransform">
+        <p5:Name>Poke Left</p5:Name>
+        <p5:Script># Poke left status
 @returns(bool)
 def process(value):
-  return value[5]</ipy:Script>
+  return value[5]</p5:Script>
       </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>Poke Right</ipy:Name>
-        <ipy:Script># Poke left status
+      <Expression xsi:type="p5:PythonTransform">
+        <p5:Name>Poke Right</p5:Name>
+        <p5:Script># Poke left status
 @returns(bool)
 def process(value):
-  return value[6]</ipy:Script>
+  return value[6]</p5:Script>
       </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>Mouse Centroid</ipy:Name>
-        <ipy:Script>clr.AddReference("OpenCV.Net")
+      <Expression xsi:type="p5:PythonTransform">
+        <p5:Name>Mouse Centroid</p5:Name>
+        <p5:Script>clr.AddReference("OpenCV.Net")
 from OpenCV.Net import *
 
 @returns(Point)
 def process(value):
-  return value[1]</ipy:Script>
+  return value[1]</p5:Script>
       </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>Active Target</ipy:Name>
-        <ipy:Script>@returns(str)
+      <Expression xsi:type="p5:PythonTransform">
+        <p5:Name>Active Target</p5:Name>
+        <p5:Script>@returns(str)
 def process(value):
-  return str(value[10])</ipy:Script>
+  return str(value[10])</p5:Script>
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="rx:Zip" />
@@ -895,120 +895,120 @@ def process(value):
           <Property Name="FileName" />
         </PropertyMappings>
       </Expression>
-      <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\lognormal-flip1111111111\04\05252025_lognormal-flip1111111111_04_eventsA.csv</io:FileName>
-        <io:Delimiter>,</io:Delimiter>
-        <io:Append>false</io:Append>
-        <io:Overwrite>false</io:Overwrite>
-        <io:Suffix>None</io:Suffix>
-        <io:IncludeHeader>true</io:IncludeHeader>
-        <io:Selector>Item1,Item2,Item3,Item4,Item5,Item6</io:Selector>
+      <Expression xsi:type="p4:CsvWriter">
+        <p4:FileName>D:\clickbait-place\data\tetrode_ob-hc\lognormal-flip1111111111\04\05252025_lognormal-flip1111111111_04_eventsA.csv</p4:FileName>
+        <p4:Delimiter>,</p4:Delimiter>
+        <p4:Append>false</p4:Append>
+        <p4:Overwrite>false</p4:Overwrite>
+        <p4:Suffix>None</p4:Suffix>
+        <p4:IncludeHeader>true</p4:IncludeHeader>
+        <p4:Selector>Item1,Item2,Item3,Item4,Item5,Item6</p4:Selector>
       </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>ITI</ipy:Name>
-        <ipy:Script># ITI status
+      <Expression xsi:type="p5:PythonTransform">
+        <p5:Name>ITI</p5:Name>
+        <p5:Script># ITI status
 
 @returns(bool)
 def process(value):
-  return value[8]</ipy:Script>
+  return value[8]</p5:Script>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="ard:DigitalOutput">
-          <ard:PortName>Arduino Mega 2560</ard:PortName>
-          <ard:Pin>6</ard:Pin>
+        <Combinator xsi:type="p1:DigitalOutput">
+          <p1:PortName>Arduino Mega 2560</p1:PortName>
+          <p1:Pin>6</p1:Pin>
         </Combinator>
       </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>Reward State</ipy:Name>
-        <ipy:Script># Get reward state
+      <Expression xsi:type="p5:PythonTransform">
+        <p5:Name>Reward State</p5:Name>
+        <p5:Script># Get reward state
 
 @returns(bool)
 def process(value):
-  return value[2]</ipy:Script>
+  return value[2]</p5:Script>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="ard:DigitalOutput">
-          <ard:PortName>Arduino Mega 2560</ard:PortName>
-          <ard:Pin>5</ard:Pin>
+        <Combinator xsi:type="p1:DigitalOutput">
+          <p1:PortName>Arduino Mega 2560</p1:PortName>
+          <p1:Pin>5</p1:Pin>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="ard:DigitalOutput">
-          <ard:PortName>Arduino Mega 2560</ard:PortName>
-          <ard:Pin>4</ard:Pin>
+        <Combinator xsi:type="p1:DigitalOutput">
+          <p1:PortName>Arduino Mega 2560</p1:PortName>
+          <p1:Pin>4</p1:Pin>
         </Combinator>
       </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>Water Left</ipy:Name>
-        <ipy:Script># Get reward_left state
+      <Expression xsi:type="p5:PythonTransform">
+        <p5:Name>Water Left</p5:Name>
+        <p5:Script># Get reward_left state
 
 @returns(bool)
 def process(value):
-  return value[3]</ipy:Script>
+  return value[3]</p5:Script>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="ard:DigitalOutput">
-          <ard:PortName>Arduino Mega 2560</ard:PortName>
-          <ard:Pin>7</ard:Pin>
+        <Combinator xsi:type="p1:DigitalOutput">
+          <p1:PortName>Arduino Mega 2560</p1:PortName>
+          <p1:Pin>7</p1:Pin>
         </Combinator>
       </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>Water Right</ipy:Name>
-        <ipy:Script># Get reward_right state and reward state
+      <Expression xsi:type="p5:PythonTransform">
+        <p5:Name>Water Right</p5:Name>
+        <p5:Script># Get reward_right state and reward state
 
 @returns(bool)
 def process(value):
-  return value[4]</ipy:Script>
+  return value[4]</p5:Script>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="ard:DigitalOutput">
-          <ard:PortName>Arduino Mega 2560</ard:PortName>
-          <ard:Pin>8</ard:Pin>
+        <Combinator xsi:type="p1:DigitalOutput">
+          <p1:PortName>Arduino Mega 2560</p1:PortName>
+          <p1:Pin>8</p1:Pin>
         </Combinator>
       </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>Click</ipy:Name>
-        <ipy:Script># Get click state (click is always last item in return statement)
+      <Expression xsi:type="p5:PythonTransform">
+        <p5:Name>Click</p5:Name>
+        <p5:Script># Get click state (click is always last item in return statement)
 
 @returns(bool)
 def process(value):
-  return value[9]</ipy:Script>
+  return value[9]</p5:Script>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="ard:DigitalOutput">
-          <ard:PortName>Arduino Mega 2560</ard:PortName>
-          <ard:Pin>12</ard:Pin>
+        <Combinator xsi:type="p1:DigitalOutput">
+          <p1:PortName>Arduino Mega 2560</p1:PortName>
+          <p1:Pin>12</p1:Pin>
         </Combinator>
       </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>Reward Right Count</ipy:Name>
-        <ipy:Script># Get reward left count
+      <Expression xsi:type="p5:PythonTransform">
+        <p5:Name>Reward Right Count</p5:Name>
+        <p5:Script># Get reward left count
 
 @returns(int)
 def process(value):
-  return value[-3]</ipy:Script>
+  return value[-3]</p5:Script>
       </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>Reward Left Count</ipy:Name>
-        <ipy:Script># Get reward left count
+      <Expression xsi:type="p5:PythonTransform">
+        <p5:Name>Reward Left Count</p5:Name>
+        <p5:Script># Get reward left count
 
 @returns(int)
 def process(value):
-  return value[-4]</ipy:Script>
+  return value[-4]</p5:Script>
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="rx:Zip" />
       </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>Combine Trial Counts</ipy:Name>
-        <ipy:Description />
-        <ipy:Script>@returns(str)
+      <Expression xsi:type="p5:PythonTransform">
+        <p5:Name>Combine Trial Counts</p5:Name>
+        <p5:Description />
+        <p5:Script>@returns(str)
 def process(value):
   reward_r = str(value.Item1)
   reward_l = str(value.Item2)
   total = str(value.Item1 + value.Item2)
   trial_info = "Left: " + reward_l + " Right: " + reward_r + " Total: " + total
-  return trial_info</ipy:Script>
+  return trial_info</p5:Script>
       </Expression>
       <Expression xsi:type="SubscribeSubject">
         <Name>TrialCountsFilename</Name>
@@ -1019,10 +1019,10 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="Combinator">
-        <Combinator xsi:type="io:WriteAllText">
-          <io:Path>D:\clickbait-place\data\tetrode_ob-hc\lognormal-flip1111111111\04\05252025_lognormal-flip1111111111_04_trialcounts.txt</io:Path>
-          <io:Overwrite>true</io:Overwrite>
-          <io:Append>false</io:Append>
+        <Combinator xsi:type="p4:WriteAllText">
+          <p4:Path>D:\clickbait-place\data\tetrode_ob-hc\lognormal-flip1111111111\04\05252025_lognormal-flip1111111111_04_trialcounts.txt</p4:Path>
+          <p4:Overwrite>true</p4:Overwrite>
+          <p4:Append>false</p4:Append>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
@@ -1036,12 +1036,12 @@ def process(value):
           <Property Name="FileName" />
         </PropertyMappings>
       </Expression>
-      <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\lognormal-flip1111111111\04\05252025_lognormal-flip1111111111_04_eventsB.csv</io:FileName>
-        <io:Append>false</io:Append>
-        <io:Overwrite>false</io:Overwrite>
-        <io:Suffix>None</io:Suffix>
-        <io:IncludeHeader>true</io:IncludeHeader>
+      <Expression xsi:type="p4:CsvWriter">
+        <p4:FileName>D:\clickbait-place\data\tetrode_ob-hc\lognormal-flip1111111111\04\05252025_lognormal-flip1111111111_04_eventsB.csv</p4:FileName>
+        <p4:Append>false</p4:Append>
+        <p4:Overwrite>false</p4:Overwrite>
+        <p4:Suffix>None</p4:Suffix>
+        <p4:IncludeHeader>true</p4:IncludeHeader>
       </Expression>
       <Expression xsi:type="GroupWorkflow">
         <Name>Air Flip</Name>
@@ -1049,9 +1049,9 @@ def process(value):
         <Workflow>
           <Nodes>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="gl:Timer">
-                <gl:DueTime>PT0S</gl:DueTime>
-                <gl:Period>PT30M</gl:Period>
+              <Combinator xsi:type="p6:Timer">
+                <p6:DueTime>PT0S</p6:DueTime>
+                <p6:Period>PT30M</p6:Period>
               </Combinator>
             </Expression>
             <Expression xsi:type="Mod">
@@ -1065,8 +1065,8 @@ def process(value):
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="rx:WithLatestFrom" />
             </Expression>
-            <Expression xsi:type="ipy:PythonTransform">
-              <ipy:Script>@returns(tuple)
+            <Expression xsi:type="p5:PythonTransform">
+              <p5:Script>@returns(tuple)
 def process(value):
     time_period = value.Item1
     session_num = int(value.Item2[1:])
@@ -1081,30 +1081,30 @@ def process(value):
       if time_period == 0:
         return (False, True)
       else:
-        return (True, False)</ipy:Script>
+        return (True, False)</p5:Script>
             </Expression>
-            <Expression xsi:type="ipy:PythonTransform">
-              <ipy:Name>Left Air</ipy:Name>
-              <ipy:Script>@returns(bool)
+            <Expression xsi:type="p5:PythonTransform">
+              <p5:Name>Left Air</p5:Name>
+              <p5:Script>@returns(bool)
 def process(value):
-  return value[0]</ipy:Script>
+  return value[0]</p5:Script>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="ard:DigitalOutput">
-                <ard:PortName>Arduino Mega 2560</ard:PortName>
-                <ard:Pin>48</ard:Pin>
+              <Combinator xsi:type="p1:DigitalOutput">
+                <p1:PortName>Arduino Mega 2560</p1:PortName>
+                <p1:Pin>48</p1:Pin>
               </Combinator>
             </Expression>
-            <Expression xsi:type="ipy:PythonTransform">
-              <ipy:Name>Right Air</ipy:Name>
-              <ipy:Script>@returns(bool)
+            <Expression xsi:type="p5:PythonTransform">
+              <p5:Name>Right Air</p5:Name>
+              <p5:Script>@returns(bool)
 def process(value):
-  return value[1]</ipy:Script>
+  return value[1]</p5:Script>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="ard:DigitalOutput">
-                <ard:PortName>Arduino Mega 2560</ard:PortName>
-                <ard:Pin>49</ard:Pin>
+              <Combinator xsi:type="p1:DigitalOutput">
+                <p1:PortName>Arduino Mega 2560</p1:PortName>
+                <p1:Pin>49</p1:Pin>
               </Combinator>
             </Expression>
             <Expression xsi:type="Combinator">
@@ -1113,9 +1113,9 @@ def process(value):
               </Combinator>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="ard:AnalogOutput">
-                <ard:PortName>Arduino Mega 2560</ard:PortName>
-                <ard:Pin>3</ard:Pin>
+              <Combinator xsi:type="p1:AnalogOutput">
+                <p1:PortName>Arduino Mega 2560</p1:PortName>
+                <p1:Pin>3</p1:Pin>
               </Combinator>
             </Expression>
           </Nodes>
@@ -1137,87 +1137,87 @@ def process(value):
         <Workflow>
           <Nodes>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="gl:CreateWindow">
-                <gl:Width>3840</gl:Width>
-                <gl:Height>1280</gl:Height>
-                <gl:VSync>On</gl:VSync>
-                <gl:SwapSync>false</gl:SwapSync>
-                <gl:ClearColor>White</gl:ClearColor>
-                <gl:ClearMask>DepthBufferBit ColorBufferBit</gl:ClearMask>
-                <gl:CursorVisible>true</gl:CursorVisible>
-                <gl:Location>
-                  <gl:X>3840</gl:X>
-                  <gl:Y>0</gl:Y>
-                </gl:Location>
-                <gl:WindowBorder>Hidden</gl:WindowBorder>
-                <gl:WindowState>Normal</gl:WindowState>
-                <gl:DisplayDevice>Primary</gl:DisplayDevice>
-                <gl:TargetRenderFrequency>30</gl:TargetRenderFrequency>
-                <gl:TargetUpdateFrequency xsi:nil="true" />
-                <gl:RenderState />
-                <gl:GraphicsMode>
-                  <gl:ColorFormat>
-                    <gl:Red>8</gl:Red>
-                    <gl:Green>8</gl:Green>
-                    <gl:Blue>8</gl:Blue>
-                    <gl:Alpha>8</gl:Alpha>
-                  </gl:ColorFormat>
-                  <gl:Depth>16</gl:Depth>
-                  <gl:Stencil>0</gl:Stencil>
-                  <gl:Samples>0</gl:Samples>
-                  <gl:AccumulatorFormat>
-                    <gl:Red>0</gl:Red>
-                    <gl:Green>0</gl:Green>
-                    <gl:Blue>0</gl:Blue>
-                    <gl:Alpha>0</gl:Alpha>
-                  </gl:AccumulatorFormat>
-                  <gl:Buffers>2</gl:Buffers>
-                  <gl:Stereo>false</gl:Stereo>
-                </gl:GraphicsMode>
+              <Combinator xsi:type="p6:CreateWindow">
+                <p6:Width>3840</p6:Width>
+                <p6:Height>1280</p6:Height>
+                <p6:VSync>On</p6:VSync>
+                <p6:SwapSync>false</p6:SwapSync>
+                <p6:ClearColor>White</p6:ClearColor>
+                <p6:ClearMask>DepthBufferBit ColorBufferBit</p6:ClearMask>
+                <p6:CursorVisible>true</p6:CursorVisible>
+                <p6:Location>
+                  <p6:X>3840</p6:X>
+                  <p6:Y>0</p6:Y>
+                </p6:Location>
+                <p6:WindowBorder>Hidden</p6:WindowBorder>
+                <p6:WindowState>Normal</p6:WindowState>
+                <p6:DisplayDevice>Primary</p6:DisplayDevice>
+                <p6:TargetRenderFrequency>30</p6:TargetRenderFrequency>
+                <p6:TargetUpdateFrequency xsi:nil="true" />
+                <p6:RenderState />
+                <p6:GraphicsMode>
+                  <p6:ColorFormat>
+                    <p6:Red>8</p6:Red>
+                    <p6:Green>8</p6:Green>
+                    <p6:Blue>8</p6:Blue>
+                    <p6:Alpha>8</p6:Alpha>
+                  </p6:ColorFormat>
+                  <p6:Depth>16</p6:Depth>
+                  <p6:Stencil>0</p6:Stencil>
+                  <p6:Samples>0</p6:Samples>
+                  <p6:AccumulatorFormat>
+                    <p6:Red>0</p6:Red>
+                    <p6:Green>0</p6:Green>
+                    <p6:Blue>0</p6:Blue>
+                    <p6:Alpha>0</p6:Alpha>
+                  </p6:AccumulatorFormat>
+                  <p6:Buffers>2</p6:Buffers>
+                  <p6:Stereo>false</p6:Stereo>
+                </p6:GraphicsMode>
               </Combinator>
             </Expression>
             <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.BonVisionResources.bonsai" />
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="gl:TextureResources">
-                <gl:Textures>
-                  <gl:TextureConfiguration xsi:type="gl:VideoTexture">
-                    <gl:Name>stimulus_monitor_2</gl:Name>
-                    <gl:Width>1280</gl:Width>
-                    <gl:Height>1920</gl:Height>
-                    <gl:InternalFormat>Rgba</gl:InternalFormat>
-                    <gl:WrapS>Repeat</gl:WrapS>
-                    <gl:WrapT>Repeat</gl:WrapT>
-                    <gl:MinFilter>Linear</gl:MinFilter>
-                    <gl:MagFilter>Linear</gl:MagFilter>
-                    <gl:FileName>D:\clickbait-place\stimuli\1515_b5_binary_m2.mp4</gl:FileName>
-                    <gl:FlipMode>Vertical</gl:FlipMode>
-                    <gl:FrameCount xsi:nil="true" />
-                    <gl:StartPosition>0</gl:StartPosition>
-                    <gl:BufferLength xsi:nil="true" />
-                  </gl:TextureConfiguration>
-                  <gl:TextureConfiguration xsi:type="gl:VideoTexture">
-                    <gl:Name>blank_screen</gl:Name>
-                    <gl:Width>1280</gl:Width>
-                    <gl:Height>1920</gl:Height>
-                    <gl:InternalFormat>Rgba</gl:InternalFormat>
-                    <gl:WrapS>Repeat</gl:WrapS>
-                    <gl:WrapT>Repeat</gl:WrapT>
-                    <gl:MinFilter>Linear</gl:MinFilter>
-                    <gl:MagFilter>Linear</gl:MagFilter>
-                    <gl:FileName>D:\clickbait-place\stimuli\blank.mp4</gl:FileName>
-                    <gl:FlipMode>Vertical</gl:FlipMode>
-                    <gl:FrameCount xsi:nil="true" />
-                    <gl:StartPosition>0</gl:StartPosition>
-                    <gl:BufferLength xsi:nil="true" />
-                  </gl:TextureConfiguration>
-                </gl:Textures>
+              <Combinator xsi:type="p6:TextureResources">
+                <p6:Textures>
+                  <p6:TextureConfiguration xsi:type="gl:VideoTexture">
+                    <p6:Name>stimulus_monitor_2</p6:Name>
+                    <p6:Width>1280</p6:Width>
+                    <p6:Height>1920</p6:Height>
+                    <p6:InternalFormat>Rgba</p6:InternalFormat>
+                    <p6:WrapS>Repeat</p6:WrapS>
+                    <p6:WrapT>Repeat</p6:WrapT>
+                    <p6:MinFilter>Linear</p6:MinFilter>
+                    <p6:MagFilter>Linear</p6:MagFilter>
+                    <p6:FileName>D:\clickbait-place\stimuli\1515_b5_binary_m2.mp4</p6:FileName>
+                    <p6:FlipMode>Vertical</p6:FlipMode>
+                    <p6:FrameCount xsi:nil="true" />
+                    <p6:StartPosition>0</p6:StartPosition>
+                    <p6:BufferLength xsi:nil="true" />
+                  </p6:TextureConfiguration>
+                  <p6:TextureConfiguration xsi:type="gl:VideoTexture">
+                    <p6:Name>blank_screen</p6:Name>
+                    <p6:Width>1280</p6:Width>
+                    <p6:Height>1920</p6:Height>
+                    <p6:InternalFormat>Rgba</p6:InternalFormat>
+                    <p6:WrapS>Repeat</p6:WrapS>
+                    <p6:WrapT>Repeat</p6:WrapT>
+                    <p6:MinFilter>Linear</p6:MinFilter>
+                    <p6:MagFilter>Linear</p6:MagFilter>
+                    <p6:FileName>D:\clickbait-place\stimuli\blank.mp4</p6:FileName>
+                    <p6:FlipMode>Vertical</p6:FlipMode>
+                    <p6:FrameCount xsi:nil="true" />
+                    <p6:StartPosition>0</p6:StartPosition>
+                    <p6:BufferLength xsi:nil="true" />
+                  </p6:TextureConfiguration>
+                </p6:Textures>
               </Combinator>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="res:LoadResources" />
+              <Combinator xsi:type="p7:LoadResources" />
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="gl:RenderFrame" />
+              <Combinator xsi:type="p6:RenderFrame" />
             </Expression>
             <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.NormalizedView.bonsai" />
             <Expression xsi:type="rx:PublishSubject">
@@ -1229,9 +1229,9 @@ def process(value):
               </Builder>
             </Expression>
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="gl:Timer">
-                <gl:DueTime>PT0S</gl:DueTime>
-                <gl:Period>PT5M</gl:Period>
+              <Combinator xsi:type="p6:Timer">
+                <p6:DueTime>PT0S</p6:DueTime>
+                <p6:Period>PT5M</p6:Period>
               </Combinator>
             </Expression>
             <Expression xsi:type="PropertyMapping">
@@ -1255,8 +1255,8 @@ def process(value):
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="rx:WithLatestFrom" />
             </Expression>
-            <Expression xsi:type="ipy:PythonTransform">
-              <ipy:Script>@returns(float)
+            <Expression xsi:type="p5:PythonTransform">
+              <p5:Script>@returns(float)
 def process(value):
     time_period = value.Item1
     session_num = int(value.Item2[1:])
@@ -1271,7 +1271,7 @@ def process(value):
       if time_period == 0:
         return -1.5
       else:
-        return 1.5</ipy:Script>
+        return 1.5</p5:Script>
             </Expression>
             <Expression xsi:type="PropertyMapping">
               <PropertyMappings>
@@ -1318,16 +1318,16 @@ def process(value):
         <Name>Filename Definitions</Name>
         <Workflow>
           <Nodes>
-            <Expression xsi:type="ipy:PythonSource">
-              <ipy:Name>Get Start Timestamp</ipy:Name>
-              <ipy:Script>from System import DateTime
+            <Expression xsi:type="p5:PythonSource">
+              <p5:Name>Get Start Timestamp</p5:Name>
+              <p5:Script>from System import DateTime
 
 # Get timestamp from beginning of session
 
 @returns(DateTime)
 def generate():
   yield DateTime.Now
-</ipy:Script>
+</p5:Script>
             </Expression>
             <Expression xsi:type="rx:ReplaySubject">
               <Name>SessionStart</Name>
@@ -1387,7 +1387,7 @@ def generate():
             <Expression xsi:type="Add" />
             <Expression xsi:type="Format" />
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="io:GetFullPath" />
+              <Combinator xsi:type="p4:GetFullPath" />
             </Expression>
             <Expression xsi:type="rx:ReplaySubject">
               <Name>VideoFilename</Name>
@@ -1410,7 +1410,7 @@ def generate():
             <Expression xsi:type="Add" />
             <Expression xsi:type="Format" />
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="io:GetFullPath" />
+              <Combinator xsi:type="p4:GetFullPath" />
             </Expression>
             <Expression xsi:type="rx:ReplaySubject">
               <Name>VideoTimestamp</Name>
@@ -1433,7 +1433,7 @@ def generate():
             <Expression xsi:type="Add" />
             <Expression xsi:type="Format" />
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="io:GetFullPath" />
+              <Combinator xsi:type="p4:GetFullPath" />
             </Expression>
             <Expression xsi:type="rx:ReplaySubject">
               <Name>AmplifierDataFilename</Name>
@@ -1456,7 +1456,7 @@ def generate():
             <Expression xsi:type="Add" />
             <Expression xsi:type="Format" />
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="io:GetFullPath" />
+              <Combinator xsi:type="p4:GetFullPath" />
             </Expression>
             <Expression xsi:type="rx:ReplaySubject">
               <Name>DAQData</Name>
@@ -1479,7 +1479,7 @@ def generate():
             <Expression xsi:type="Add" />
             <Expression xsi:type="Format" />
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="io:GetFullPath" />
+              <Combinator xsi:type="p4:GetFullPath" />
             </Expression>
             <Expression xsi:type="rx:ReplaySubject">
               <Name>HistogramFilename</Name>
@@ -1502,7 +1502,7 @@ def generate():
             <Expression xsi:type="Add" />
             <Expression xsi:type="Format" />
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="io:GetFullPath" />
+              <Combinator xsi:type="p4:GetFullPath" />
             </Expression>
             <Expression xsi:type="rx:ReplaySubject">
               <Name>TrialCountsFilename</Name>
@@ -1525,7 +1525,7 @@ def generate():
             <Expression xsi:type="Add" />
             <Expression xsi:type="Format" />
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="io:GetFullPath" />
+              <Combinator xsi:type="p4:GetFullPath" />
             </Expression>
             <Expression xsi:type="rx:ReplaySubject">
               <Name>TrialEventsFilename</Name>
@@ -1548,7 +1548,7 @@ def generate():
             <Expression xsi:type="Add" />
             <Expression xsi:type="Format" />
             <Expression xsi:type="Combinator">
-              <Combinator xsi:type="io:GetFullPath" />
+              <Combinator xsi:type="p4:GetFullPath" />
             </Expression>
             <Expression xsi:type="rx:ReplaySubject">
               <Name>TrialRewardsFilename</Name>
