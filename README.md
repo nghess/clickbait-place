@@ -59,14 +59,14 @@ clickbait-place/
 ├── clickbait_anemo/              # Open-field recording
 ├── clickbait_anemo_lognormal/
 ├── clickbait_master/             # Place-field recording
-├── water_calibration/
-├── water_flush/
 ├── utils/                        # Hardware configs and test workflows
 │   ├── acA2040-90umNIR_24714376.pfs   # Basler camera profile
 │   ├── cbp_openephys.config           # OpenEphys 32ch tetrode config
 │   ├── normal_distribution_viewer.py  # Distribution visualization utility
-│   ├── fan_test/
-│   └── pin_test/
+│   ├── fan_test/                 # Test Arduino PWM output
+│   └── pin_test/                 # Test Arduino digital output
+│   └── water_calibration/        # Calibrate water reward volume
+│   └── water_flush/              # Flush tubes with button press
 └── wip/                          # Work-in-progress refactors
     └── clickbait-refactor-063025/
 ```
