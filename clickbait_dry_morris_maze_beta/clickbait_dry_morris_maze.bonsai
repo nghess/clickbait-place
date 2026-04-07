@@ -49,7 +49,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:VideoWriter">
-          <cv:FileName>D:\clickbait-place\data\tetrode_ob-hc\1111\d1\032826_1111_d1.avi</cv:FileName>
+          <cv:FileName>D:\clickbait-place\data\dry-morris-maze\fake123\d0\033026_fake123_d0.avi</cv:FileName>
           <cv:Suffix>None</cv:Suffix>
           <cv:Buffered>true</cv:Buffered>
           <cv:Overwrite>false</cv:Overwrite>
@@ -77,7 +77,7 @@
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\1111\d1\032826_1111_d1_video_timestamp.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\dry-morris-maze\fake123\d0\033026_fake123_d0_video_timestamp.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -409,8 +409,8 @@ def draw_targets(active_target, target_queue, grid, img, trial_phase, draw_futur
     return img
 
 # Here we define the number of grid cells to divide the arena by
-grid_x = 7
-grid_y = 15
+grid_x = 5
+grid_y = 11
 
 # Initialize grid dimensions explicitly
 global grid_cells_x
@@ -516,8 +516,8 @@ def process(value):
 
     # Timing-related vars
     current_time = time.time()
-    reward_duration_left = 0.032
-    reward_duration_right = 0.032
+    reward_duration_left = 0.04
+    reward_duration_right = 0.04
     click_duration = 0.1
     iti_duration_min = 1.0
     iti_duration_max = 5.0
@@ -688,7 +688,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\1111\d1\032826_1111_d1_eventsA.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\dry-morris-maze\fake123\d0\033026_fake123_d0_eventsA.csv</io:FileName>
         <io:Delimiter>,</io:Delimiter>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
@@ -812,7 +812,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="io:WriteAllText">
-          <io:Path>D:\clickbait-place\data\tetrode_ob-hc\1111\d1\032826_1111_d1_trialcounts.txt</io:Path>
+          <io:Path>D:\clickbait-place\data\dry-morris-maze\fake123\d0\033026_fake123_d0_trialcounts.txt</io:Path>
           <io:Overwrite>true</io:Overwrite>
           <io:Append>false</io:Append>
         </Combinator>
@@ -829,7 +829,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\tetrode_ob-hc\1111\d1\032826_1111_d1_eventsB.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\dry-morris-maze\fake123\d0\033026_fake123_d0_eventsB.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -1369,7 +1369,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>032826</Value>
+          <Value>033026</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1381,7 +1381,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="FloatProperty">
-          <Value>5</Value>
+          <Value>30</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1393,7 +1393,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>1111</Value>
+          <Value>fake123</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1405,7 +1405,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>d1</Value>
+          <Value>d0</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1413,11 +1413,11 @@ def generate():
         <rx:BufferSize xsi:nil="true" />
       </Expression>
       <Expression xsi:type="ExternalizedMapping">
-        <Property Name="Value" DisplayName="Implant Type" />
+        <Property Name="Value" DisplayName="Experiment Name" />
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>tetrode_ob-hc</Value>
+          <Value>dry-morris-maze</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
