@@ -439,5 +439,5 @@ def process(value):
     # Return values
     return (canvas, Point(centroid_x, centroid_y), reward_state, reward_left, reward_right, 
             poke_left, poke_right, drinking, in_iti, click, active_target, 
-            trial_count, reward_left_count, reward_right_count, trial_phase, 
-            flip_state)
+            trial_count, reward_left_count, reward_right_count, punishment_count, 
+            trial_phase, flip_state)
