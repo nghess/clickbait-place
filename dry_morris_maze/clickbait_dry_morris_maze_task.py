@@ -121,7 +121,7 @@ def get_platform_rect(flip_state, grid_cells_x, grid_cells_y, img_dims):
         col = 0
         row = grid_cells_y - 2
         # Anchor bottom-left corner, grow right and up
-        tl = Point(col * cell_w, (row - 1) * cell_h)
+        tl = Point(col * cell_w, (row - 3) * cell_h)
         br = Point((col + 2) * cell_w, (row + 1) * cell_h)
     
     return (tl, br)
