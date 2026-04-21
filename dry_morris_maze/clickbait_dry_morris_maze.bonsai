@@ -60,7 +60,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="dsp:MatrixWriter">
-          <dsp:Path>D:\clickbait-place\data\dry-morris-maze-visual\stim234511121\d2\041426_stim234511121_d2._rhd2000.bin</dsp:Path>
+          <dsp:Path>D:\clickbait-place\data\dry-morris-maze-visual\2213\t5\042126_2213_t5_rhd2000.bin</dsp:Path>
           <dsp:Suffix>None</dsp:Suffix>
           <dsp:Overwrite>false</dsp:Overwrite>
           <dsp:Layout>ColumnMajor</dsp:Layout>
@@ -94,7 +94,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:VideoWriter">
-          <cv:FileName>D:\clickbait-place\data\dry-morris-maze-visual\stim234511121\d2\041426_stim234511121_d2..avi</cv:FileName>
+          <cv:FileName>D:\clickbait-place\data\dry-morris-maze-visual\2213\t5\042126_2213_t5.avi</cv:FileName>
           <cv:Suffix>None</cv:Suffix>
           <cv:Buffered>true</cv:Buffered>
           <cv:Overwrite>false</cv:Overwrite>
@@ -122,7 +122,7 @@
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\dry-morris-maze-visual\stim234511121\d2\041426_stim234511121_d2._video_timestamp.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\dry-morris-maze-visual\2213\t5\042126_2213_t5_video_timestamp.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -838,7 +838,7 @@ def process(value):
 
 @returns(int)
 def process(value):
-  return value[-3]</ipy:Script>
+  return value[-6]</ipy:Script>
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="rx:Timestamp" />
@@ -887,7 +887,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\dry-morris-maze-visual\stim234511121\d2\041426_stim234511121_d2._eventsA.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\dry-morris-maze-visual\2213\t5\042126_2213_t5_eventsA.csv</io:FileName>
         <io:Delimiter>,</io:Delimiter>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
@@ -1023,7 +1023,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="io:WriteAllText">
-          <io:Path>D:\clickbait-place\data\dry-morris-maze-visual\stim234511121\d2\041426_stim234511121_d2._trialcounts.txt</io:Path>
+          <io:Path>D:\clickbait-place\data\dry-morris-maze-visual\2213\t5\042126_2213_t5_trialcounts.txt</io:Path>
           <io:Overwrite>true</io:Overwrite>
           <io:Append>false</io:Append>
         </Combinator>
@@ -1046,7 +1046,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\dry-morris-maze-visual\stim234511121\d2\041426_stim234511121_d2._eventsB.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\dry-morris-maze-visual\2213\t5\042126_2213_t5_eventsB.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -1124,7 +1124,7 @@ def process(value):
                     <gl:WrapT>Repeat</gl:WrapT>
                     <gl:MinFilter>Linear</gl:MinFilter>
                     <gl:MagFilter>Linear</gl:MagFilter>
-                    <gl:FileName>stimuli\1515_b5_binary_m3.mp4</gl:FileName>
+                    <gl:FileName>stimuli\alternating-line.mp4</gl:FileName>
                     <gl:FlipMode>Vertical</gl:FlipMode>
                     <gl:FrameCount xsi:nil="true" />
                     <gl:StartPosition>0</gl:StartPosition>
@@ -1244,7 +1244,7 @@ def process(value):
               <Angle>0</Angle>
               <ExtentX>8</ExtentX>
               <ExtentY>2</ExtentY>
-              <LocationX>1000</LocationX>
+              <LocationX>1.5</LocationX>
               <LocationY>0</LocationY>
               <ScaleX>1</ScaleX>
               <ScaleY>1</ScaleY>
@@ -1645,7 +1645,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>041426</Value>
+          <Value>042126</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1669,7 +1669,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>test</Value>
+          <Value>2213</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1681,7 +1681,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>d2.</Value>
+          <Value>t5</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
