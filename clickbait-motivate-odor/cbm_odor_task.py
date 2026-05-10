@@ -332,7 +332,7 @@ def draw_targets(active_target, target_queue, grid, img, draw_distribution=False
 # Configuration parameters - MODIFY THESE TO CONTROL YOUR DISTRIBUTION
 grid_x = 5
 grid_y = 11
-max_targets_per_cell = 1
+max_targets_per_cell = 3
 
 # Flip schedule parameters are defined further below alongside the schedule
 # generator (TRIALS_PER_STATE, MAX_CONSECUTIVE_SAME_STATE).
@@ -344,15 +344,15 @@ DISTRIBUTION_CONFIG_STATE_0 = {
     'mean_y': 2,     # Top-focused
     
     # Standard deviations for normal distribution
-    'sigma_x': 50.0,  # Try: 1.0 for narrow, 3.0 for wide
+    'sigma_x': 5.0,  # Try: 1.0 for narrow, 3.0 for wide
     'sigma_y': None,  # Try: 2.0 for narrow, 5.0 for wide
     
     # Log-normal control
     'log_normal': 'y',  # Options: False, True, 'x', 'y', ['x', 'y']
     
     # Log-space standard deviations (for log-normal axes)
-    'log_sigma_x': 0.75,  # 0.2-0.4: tight, 0.5: moderate, 0.8-1.2: fat tails
-    'log_sigma_y': 0.75,  # 0.2-0.4: tight, 0.5: moderate, 0.8-1.2: fat tails
+    'log_sigma_x': 0.7,  # 0.2-0.4: tight, 0.5: moderate, 0.8-1.2: fat tails
+    'log_sigma_y': 0.7,  # 0.2-0.4: tight, 0.5: moderate, 0.8-1.2: fat tails
     'flip_log_y': False,  # Normal log-normal for state 0
 }
 
@@ -361,12 +361,12 @@ DISTRIBUTION_CONFIG_STATE_1 = {
     'mean_x': None,  # Keep centered
     'mean_y': 2,     # Same mean position as state 0
     
-    'sigma_x': 50.0,
+    'sigma_x': 5.0,
     'sigma_y': None,
     
     'log_normal': 'y',
-    'log_sigma_x': 0.75,
-    'log_sigma_y': 0.75,   # Same parameters as state 0
+    'log_sigma_x': 0.7,
+    'log_sigma_y': 0.7,   # Same parameters as state 0
     'flip_log_y': True,   # Flip the log-normal distribution
 }
 
@@ -375,12 +375,12 @@ DISTRIBUTION_CONFIG_STATE_2 = {
     'mean_x': None,   # Defaults to (inner_x - 1) / 2.0 in generate_targets
     'mean_y': None,   # Defaults to (inner_y - 1) / 2.0 in generate_targets
     
-    'sigma_x': 50.0,  # Defaults to inner_x / 3.0
-    'sigma_y': 50.0,  # Defaults to inner_y / 3.0
+    'sigma_x': 5.0,  # Defaults to inner_x / 3.0
+    'sigma_y': 5.0,  # Defaults to inner_y / 3.0
     
     'log_normal': False,  # Normal on both axes
-    'log_sigma_x': 0.5,   # Unused (log_normal is False) but kept for kwarg consistency
-    'log_sigma_y': 0.5,   # Unused (log_normal is False) but kept for kwarg consistency
+    'log_sigma_x': None,   # Unused (log_normal is False) but kept for kwarg consistency
+    'log_sigma_y': None,   # Unused (log_normal is False) but kept for kwarg consistency
     'flip_log_y': False,
 }
 

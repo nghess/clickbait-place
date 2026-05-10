@@ -478,15 +478,15 @@ DISTRIBUTION_CONFIG_STATE_0 = {
     'mean_y': 2,     # Top-focused
     
     # Standard deviations for normal distribution
-    'sigma_x': 50.0,  # Try: 1.0 for narrow, 3.0 for wide
+    'sigma_x': 5.0,  # Try: 1.0 for narrow, 3.0 for wide
     'sigma_y': None,  # Try: 2.0 for narrow, 5.0 for wide
     
     # Log-normal control
     'log_normal': 'y',  # Options: False, True, 'x', 'y', ['x', 'y']
     
     # Log-space standard deviations (for log-normal axes)
-    'log_sigma_x': 0.75,  # 0.2-0.4: tight, 0.5: moderate, 0.8-1.2: fat tails
-    'log_sigma_y': 0.75,  # 0.2-0.4: tight, 0.5: moderate, 0.8-1.2: fat tails
+    'log_sigma_x': 0.7,  # 0.2-0.4: tight, 0.5: moderate, 0.8-1.2: fat tails
+    'log_sigma_y': 0.7,  # 0.2-0.4: tight, 0.5: moderate, 0.8-1.2: fat tails
     'flip_log_y': False,  # Normal log-normal for state 0
 }
 
@@ -495,12 +495,12 @@ DISTRIBUTION_CONFIG_STATE_1 = {
     'mean_x': None,  # Keep centered
     'mean_y': 2,     # Same mean position as state 0
     
-    'sigma_x': 50.0,
+    'sigma_x': 5.0,
     'sigma_y': None,
     
     'log_normal': 'y',
-    'log_sigma_x': 0.75,
-    'log_sigma_y': 0.75,   # Same parameters as state 0
+    'log_sigma_x': 0.7,
+    'log_sigma_y': 0.7,   # Same parameters as state 0
     'flip_log_y': True,   # Flip the log-normal distribution
 }
 
@@ -509,12 +509,12 @@ DISTRIBUTION_CONFIG_STATE_2 = {
     'mean_x': None,   # Defaults to (inner_x - 1) / 2.0 in generate_targets
     'mean_y': None,   # Defaults to (inner_y - 1) / 2.0 in generate_targets
     
-    'sigma_x': None,  # Defaults to inner_x / 3.0
-    'sigma_y': None,  # Defaults to inner_y / 3.0
+    'sigma_x': 5.0,  # Defaults to inner_x / 3.0
+    'sigma_y': 5.0,  # Defaults to inner_y / 3.0
     
     'log_normal': False,  # Normal on both axes
-    'log_sigma_x': 0.5,   # Unused (log_normal is False) but kept for kwarg consistency
-    'log_sigma_y': 0.5,   # Unused (log_normal is False) but kept for kwarg consistency
+    'log_sigma_x': None,   # Unused (log_normal is False) but kept for kwarg consistency
+    'log_sigma_y': None,   # Unused (log_normal is False) but kept for kwarg consistency
     'flip_log_y': False,
 }
 
@@ -896,7 +896,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:VideoWriter">
-          <cv:FileName>D:\clickbait-place\data\cbm-odor\3state-test3111\x0\050526_3state-test3111_x0.avi</cv:FileName>
+          <cv:FileName>D:\clickbait-place\data\cbm-odor\3ssgstssaate-test31114\x0\050526_3ssgstssaate-test31114_x0.avi</cv:FileName>
           <cv:Suffix>None</cv:Suffix>
           <cv:Buffered>true</cv:Buffered>
           <cv:Overwrite>false</cv:Overwrite>
@@ -924,7 +924,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\cbm-odor\3state-test3111\x0\050526_3state-test3111_x0_video_timestamp.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\cbm-odor\3ssgstssaate-test31114\x0\050526_3ssgstssaate-test31114_x0_video_timestamp.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -1049,7 +1049,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\cbm-odor\3state-test3111\x0\050526_3state-test3111_x0_eventsA.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\cbm-odor\3ssgstssaate-test31114\x0\050526_3ssgstssaate-test31114_x0_eventsA.csv</io:FileName>
         <io:Delimiter>,</io:Delimiter>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
@@ -1173,7 +1173,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="io:WriteAllText">
-          <io:Path>D:\clickbait-place\data\cbm-odor\3state-test3111\x0\050526_3state-test3111_x0_trialcounts.txt</io:Path>
+          <io:Path>D:\clickbait-place\data\cbm-odor\3ssgstssaate-test31114\x0\050526_3ssgstssaate-test31114_x0_trialcounts.txt</io:Path>
           <io:Overwrite>true</io:Overwrite>
           <io:Append>false</io:Append>
         </Combinator>
@@ -1193,7 +1193,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\cbm-odor\3state-test3111\x0\050526_3state-test3111_x0_eventsB.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\cbm-odor\3ssgstssaate-test31114\x0\050526_3ssgstssaate-test31114_x0_eventsB.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -2202,7 +2202,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>3state-test3111</Value>
+          <Value>3ssgstssaate-test31114</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
