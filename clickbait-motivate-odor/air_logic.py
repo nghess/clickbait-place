@@ -8,7 +8,12 @@ def process(value):
     right_air = False
     fans = 0
 
-    if active_target is not None and reward_state == False:
+    if active_target == 'None':
+        active_target = None
+    else:
+        active_target = int(active_target)
+
+    if active_target is not None:
         if flip_state == 0:
             left_air = True
             right_air = False
@@ -22,10 +27,11 @@ def process(value):
             right_air = False
             fans = 255
 
-    elif reward_state == True:
+    elif active_target is None and reward_state == True:
         left_air = False
         right_air = False
         fans = 255
+
     else:
         left_air = False
         right_air = False
