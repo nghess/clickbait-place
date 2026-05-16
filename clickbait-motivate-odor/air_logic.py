@@ -25,7 +25,7 @@ def process(value):
         elif flip_state == 2:
             left_air = False
             right_air = False
-            fans = 255
+            fans = 128
 
     elif active_target is None and reward_state == True:
         left_air = False
