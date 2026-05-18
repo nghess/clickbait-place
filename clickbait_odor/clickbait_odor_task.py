@@ -8,7 +8,112 @@ import random
 import System
 from System import Array
 
-# Class to generate maze coordinates
+# Enhanced 2D distribution generator for IronPython
+def generate_2d_distribution(x_size, y_size, mean_x=None, mean_y=None, 
+                           sigma_x=None, sigma_y=None, log_normal=False,
+                           log_sigma_x=0.5, log_sigma_y=0.5, flip_log_y=False):
+    """
+    Generate a 2D normal or log-normal distribution for IronPython.
+    
+    Parameters:
+    -----------
+    x_size : int
+        Width of the grid (number of cells in x direction)
+    y_size : int
+        Height of the grid (number of cells in y direction)
+    mean_x : float, optional
+        X-coordinate of the mean (default: center of x-axis)
+    mean_y : float, optional
+        Y-coordinate of the mean (default: center of y-axis)
+    sigma_x : float, optional
+        Standard deviation in x direction (default: x_size/6)
+    sigma_y : float, optional
+        Standard deviation in y direction (default: y_size/6)
+    log_normal : bool, str, or list
+        Control log-normal distribution:
+        - False: normal distribution for both axes
+        - True: log-normal for both axes  
+        - 'x': log-normal for x-axis only
+        - 'y': log-normal for y-axis only
+    log_sigma_x : float
+        Standard deviation in log-space for x-axis log-normal (default: 0.5)
+    log_sigma_y : float
+        Standard deviation in log-space for y-axis log-normal (default: 0.5)
+    flip_log_y : bool
+        If True and log_normal includes 'y', flips the y-axis log-normal distribution
+        
+    Returns:
+    --------
+    distribution : list
+        1D list containing the flattened distribution values
+    """
+    # Set default parameters
+    if mean_x is None:
+        mean_x = x_size / 2.0
+    if mean_y is None:
+        mean_y = y_size / 2.0
+        
+    if sigma_x is None:
+        sigma_x = x_size / 6.0
+    if sigma_y is None:
+        sigma_y = y_size / 6.0
+    
+    # Parse log_normal parameter
+    if log_normal is True:
+        log_x, log_y = True, True
+    elif log_normal is False:
+        log_x, log_y = False, False
+    elif log_normal == 'x':
+        log_x, log_y = True, False
+    elif log_normal == 'y':
+        log_x, log_y = False, True
+    elif hasattr(log_normal, '__iter__'):  # Handle list/tuple in IronPython
+        log_x = 'x' in log_normal
+        log_y = 'y' in log_normal
+    else:
+        raise ValueError("log_normal must be True, False, 'x', 'y', or a list containing 'x' and/or 'y'")
+    
+    # Generate distribution
+    distribution = []
+    
+    for y in range(y_size):
+        for x in range(x_size):
+            # Calculate distributions for each axis separately
+            if log_x:
+                # Log-normal for X axis
+                log_mean_x = math.log(max(mean_x, 1e-10))
+                x_pos = max(x + 1, 1e-10)  # Add 1 to avoid log(0), ensure positive
+                z_x = math.exp(-((math.log(x_pos) - log_mean_x)**2 / (2 * log_sigma_x**2)))
+            else:
+                # Normal for X axis
+                z_x = math.exp(-((x - mean_x)**2 / (2 * sigma_x**2)))
+            
+            if log_y:
+                # Log-normal for Y axis
+                log_mean_y = math.log(max(mean_y, 1e-10))
+                if flip_log_y:
+                    # Flip the log-normal by using (y_size - y - 1) instead of y
+                    y_flipped = y_size - y - 1
+                    y_pos = max(y_flipped + 1, 1e-10)
+                else:
+                    y_pos = max(y + 1, 1e-10)  # Add 1 to avoid log(0), ensure positive
+                z_y = math.exp(-((math.log(y_pos) - log_mean_y)**2 / (2 * log_sigma_y**2)))
+            else:
+                # Normal for Y axis
+                z_y = math.exp(-((y - mean_y)**2 / (2 * sigma_y**2)))
+            
+            # Combine the distributions (multiply since they're independent)
+            z = z_x * z_y
+            distribution.append(z)
+    
+    # Normalize distribution so it sums to 1
+    total_prob = sum(distribution)
+    if total_prob > 0:
+        distribution = [p / total_prob for p in distribution]
+    
+    return distribution
+
+# Class to generate maze coordinates (unchanged)
 class GridMaze:
     def __init__(self, maze_bounds, maze_dims):
         self.bounds = maze_bounds
@@ -29,62 +134,132 @@ def draw_grid(grid, img):
     for cell in grid.cells:
         CV.Rectangle(img, cell[0], cell[1], grid_color, thickness=2)
 
-# Function to extract dims from image
+# Function to extract dims from image (unchanged)
 def get_image_shape(img):
     size = img.Size
     return [size.Width, size.Height]
 
-# Modified function to visualize the target distribution without using Rgba
+# Enhanced target generation function
+def generate_targets(grid_cells_x, grid_cells_y, max_targets_per_cell=5, shuffle=True,
+                    mean_x=None, mean_y=None, sigma_x=None, sigma_y=None, 
+                    log_normal=False, log_sigma_x=0.5, log_sigma_y=0.5, flip_log_y=False):
+    """
+    Generate targets with enhanced distribution control.
+    
+    Parameters:
+    -----------
+    grid_cells_x, grid_cells_y : int
+        Grid dimensions
+    max_targets_per_cell : int
+        Maximum number of targets per cell
+    shuffle : bool
+        Whether to shuffle the target queue
+    mean_x, mean_y : float, optional
+        Mean position of the distribution
+    sigma_x, sigma_y : float, optional
+        Standard deviation for normal distribution
+    log_normal : bool, str, or list
+        Log-normal distribution control
+    log_sigma_x, log_sigma_y : float
+        Log-space standard deviations
+        
+    Returns:
+    --------
+    tuple : (grid_cells_x, grid_cells_y, target_queue, distribution, active_target)
+    """
+    # Calculate the actual grid size (excluding border cells)
+    inner_x = grid_cells_x - 2
+    inner_y = grid_cells_y - 2
+    
+    # Set default parameters if not provided
+    if mean_x is None:
+        mean_x = (inner_x - 1) / 2.0  # Center of 0-indexed grid
+    if mean_y is None:
+        mean_y = (inner_y - 1) / 2.0  # Center of 0-indexed grid
+    if sigma_x is None:
+        sigma_x = inner_x / 3.0
+    if sigma_y is None:
+        sigma_y = inner_y / 3.0
+    
+    # Generate the 2D distribution
+    base_distribution = generate_2d_distribution(
+        inner_x, inner_y, mean_x, mean_y, sigma_x, sigma_y,
+        log_normal, log_sigma_x, log_sigma_y, flip_log_y
+    )
+    
+    # Find max probability for scaling
+    max_prob = max(base_distribution) if base_distribution else 1.0
+    
+    # Quantize probabilities into discrete target counts
+    target_counts = {}
+    total_targets = 0
+    
+    for i, prob in enumerate(base_distribution):
+        # Scale to [1, max_targets_per_cell] range
+        scaled_targets = 0 + int((prob / max_prob) * (max_targets_per_cell - 1))
+        target_counts[i] = scaled_targets
+        total_targets += scaled_targets
+    
+    # Create target queue
+    target_queue = []
+    for cell_idx, count in target_counts.items():
+        for _ in range(count):
+            target_queue.append(cell_idx)
+    
+    if shuffle:
+        random.shuffle(target_queue)
+
+    # Set the first active target
+    active_target = None
+    if target_queue:
+        active_target = target_queue[0]
+        target_queue = target_queue[1:]
+    
+    # Store initial cell counts for visualization
+    global initial_cell_counts
+    global max_initial_count
+    initial_cell_counts = target_counts.copy()
+    max_initial_count = max_targets_per_cell
+    
+    return grid_cells_x, grid_cells_y, target_queue, base_distribution, active_target
+
+# Function to get current distribution config based on flip state
+def get_current_distribution_config():
+    """Return the appropriate distribution config based on current flip_state."""
+    if flip_state == 0:
+        return DISTRIBUTION_CONFIG_STATE_0
+    elif flip_state == 1:
+        return DISTRIBUTION_CONFIG_STATE_1
+    else:
+        return DISTRIBUTION_CONFIG_STATE_2
+
+# Visualization functions (unchanged from your original)
 def draw_target_distribution(target_distribution, grid, img, max_intensity=255):
-    # First find the maximum probability in the distribution (for normalization)
     if sum(target_distribution) > 0:
         max_prob = max(target_distribution)
     else:
-        max_prob = 1.0  # Default if distribution is empty
+        max_prob = 1.0
     
-    # Create a temporary overlay image
     overlay = create_blank_canvas(img.Size.Width, img.Size.Height)
     
-    # Create a color for each cell based on its probability
     for i, prob in enumerate(target_distribution):
         if prob > 0 and i < len(grid.cells):
-            # Calculate normalized probability (0-1)
             norm_prob = prob / max_prob
-            
-            # Calculate intensity based on probability (brighter = higher probability)
             intensity = int(norm_prob * max_intensity)
-            
-            # Use a red color with intensity proportional to probability
             dist_color = Scalar.Rgb(intensity, 0, 0)
-            
-            # Draw rectangle with color intensity showing probability
             cell = grid.cells[i]
             CV.Rectangle(overlay, cell[0], cell[1], dist_color, thickness=-1)
     
-    # Blend the overlay with the original image
-    # We'll use a simple blend - add the images and clip values
-    alpha = 0.5  # Blend factor (adjust for transparency effect)
+    alpha = 0.5
     CV.AddWeighted(img, 1.0, overlay, alpha, 0.0, img)
-    
     return img
 
-# Global variable to store initial target counts per cell
-global initial_cell_counts
-global max_initial_count
-initial_cell_counts = {}
-max_initial_count = 1  # Default to 1 to avoid division by zero
-
 def draw_future_targets(target_queue, grid, img):
-    # Create a combined list with current queue and active target for visualization
     all_targets = list(target_queue)
-
     if not all_targets:
         return img
 
-    # Create a temporary overlay image
     overlay = create_blank_canvas(img.Size.Width, img.Size.Height)
-
-    # Count occurrences of each cell in the combined list
     cell_counts = {}
     for cell_idx in all_targets:
         if cell_idx in cell_counts:
@@ -92,61 +267,40 @@ def draw_future_targets(target_queue, grid, img):
         else:
             cell_counts[cell_idx] = 1
 
-    # Hard-code the intensity range to match the expected counts (1-5)
     min_possible_count = 1
     max_possible_count = 5
-    
-    # Define base and range for intensity scaling
     base_intensity = 50
-    intensity_range = 205  # from 50 to 255
+    intensity_range = 205
     
-    # Draw each cell with brightness proportional to count
     for cell_idx, count in cell_counts.items():
         if cell_idx < len(grid.cells):
-            # Clamp count to our expected range just in case
             clamped_count = max(min_possible_count, min(count, max_possible_count))
-            
-            # Calculate normalized position in range [0-1]
             normalized_position = (clamped_count - min_possible_count) / float(max_possible_count - min_possible_count)
-            
-            # Calculate intensity based on position in range
             intensity = base_intensity + int(normalized_position * intensity_range)
-            
-            # Use a brighter, more distinct color
-            target_future_color = Scalar.Rgb(0, intensity, intensity)  # Cyan
-
+            target_future_color = Scalar.Rgb(0, intensity, intensity)
             cell = grid.cells[cell_idx]
             CV.Rectangle(overlay, cell[0], cell[1], target_future_color, thickness=-1)
 
-    # Blend overlay with image
     alpha = 0.5
     CV.AddWeighted(img, 1.0, overlay, alpha, 0.0, img)
-
     return img
 
-# Modified get_grid_location to handle the active target
 def get_grid_location(grid, centroid_x, centroid_y, active_target, img):
     cell_width = grid.bounds[0] // grid.shape[0]
     cell_height = grid.bounds[1] // grid.shape[1]
     
-    # Calculate grid position accounting for border
-    grid_x = int(centroid_x // cell_width) - 1  # Subtract 1 to account for border
-    grid_y = int(centroid_y // cell_height) - 1  # Subtract 1 to account for border
+    grid_x = int(centroid_x // cell_width) - 1
+    grid_y = int(centroid_y // cell_height) - 1
     
     target_found = False
     
-    # Calculate the index in the cells list
-    # Only consider valid inner grid cells
     if 0 <= grid_x < grid.shape[0]-2 and 0 <= grid_y < grid.shape[1]-2:
-        # Calculate index in the flattened cells list
         cell_index = grid_y * (grid.shape[0]-2) + grid_x
         
-        # Check if index is valid for the cells list
         if 0 <= cell_index < len(grid.cells):
             cell = grid.cells[cell_index]
             CV.Rectangle(img, cell[0], cell[1], mouse_loc_color, thickness=-1)
             
-            # Check if this is the active target
             if cell_index == active_target:
                 target_found = True
     
@@ -160,137 +314,201 @@ def create_blank_canvas(width, height, channels=3, color=(0, 0, 0)):
     else:
         fill_color = Scalar.Rgb(color[0], color[1], color[2])
     img.Set(fill_color)
-    
     return img
 
-"""
-Define targets
-"""
-# Modified to generate targets deterministically based on probability distribution
-def generate_targets(grid_cells_x, grid_cells_y, max_targets_per_cell=5, shuffle=True):
-    # Initialize target distribution array
-    possible_targets = (grid_cells_x-2) * (grid_cells_y-2)
-    
-    # Create a 2D array to store probability distribution
-    base_distribution = [0] * possible_targets
-    
-    # Calculate centers (mean) of the grid
-    center_x = (grid_cells_x - 3) / 2.0
-    center_y = (grid_cells_y - 3) / 2.0
-    
-    # Standard deviation - adjust these values to control spread
-    sigma_x = (grid_cells_x - 2) / 3.0
-    sigma_y = (grid_cells_y - 2) / 3.0
-    
-    # Generate normal distribution of probabilities
-    for y in range(grid_cells_y - 2):
-        for x in range(grid_cells_x - 2):
-            index = y * (grid_cells_x - 2) + x
-            
-            # Calculate distance from center using normal distribution
-            px = math.exp(-0.5 * ((x - center_x) / sigma_x) ** 2)
-            py = math.exp(-0.5 * ((y - center_y) / sigma_y) ** 2)
-            
-            # Combined probability
-            base_distribution[index] = px * py
-    
-    # Normalize distribution so it sums to 1
-    total_prob = sum(base_distribution)
-    base_distribution = [p / total_prob for p in base_distribution]
-    
-    # Find max probability for scaling
-    max_prob = max(base_distribution)
-    
-    # Quantize probabilities into discrete target counts (1 to max_targets_per_cell)
-    target_counts = {}
-    total_targets = 0
-    
-    for i, prob in enumerate(base_distribution):
-        # Scale to [1, max_targets_per_cell] range
-        # Cells with the highest probability get max_targets_per_cell targets
-        # All cells get at least 1 target
-        scaled_targets = 1 + int((prob / max_prob) * (max_targets_per_cell - 1))
-        target_counts[i] = scaled_targets
-        total_targets += scaled_targets
-    
-    # Create a flat target queue with the appropriate number of targets per cell
-    target_queue = []
-    for cell_idx, count in target_counts.items():
-        for _ in range(count):
-            target_queue.append(cell_idx)
-    
-    if shuffle:
-        random.shuffle(target_queue)
-
-    # Set the first active target
-    active_target = None
-    if target_queue:
-        active_target = target_queue[0]
-        target_queue = target_queue[1:]  # Remove active target from queue
-    
-    # Store initial cell counts for visualization
-    global initial_cell_counts
-    global max_initial_count
-    initial_cell_counts = target_counts.copy()
-    max_initial_count = max_targets_per_cell
-    
-    return grid_cells_x, grid_cells_y, target_queue, base_distribution, active_target
-
-# Draw targets and distribution
 def draw_targets(active_target, target_queue, grid, img, draw_distribution=False, draw_future=False):
-    # First draw distribution if enabled
     if draw_distribution:
         img = draw_target_distribution(target_distribution, grid, img)
     
-    # Draw future target locations if enabled
     if draw_future:
         img = draw_future_targets(target_queue, grid, img)
     
-    # Then draw the active target
     if active_target is not None and active_target < len(grid.cells):
-        # Draw the active target
         cell = grid.cells[active_target]
         CV.Rectangle(img, cell[0], cell[1], target_color, thickness=-1)
     
     return img
 
-# Here we define the number of grid cells to divide the arena by
-grid_x = 7
-grid_y = 15
+# Configuration parameters - MODIFY THESE TO CONTROL YOUR DISTRIBUTION
+grid_x = 5
+grid_y = 11
+max_targets_per_cell = 3
 
-# Define maximum targets per cell (quantization steps)
-max_targets_per_cell = 5
+# Flip schedule parameters are defined further below alongside the schedule
+# generator (TRIALS_PER_STATE, MAX_CONSECUTIVE_SAME_STATE).
+
+# Distribution configurations for each flip state
+DISTRIBUTION_CONFIG_STATE_0 = {
+    # Mean position (None = center)
+    'mean_x': None,  # Try: 2.0 for left-shifted, 4.0 for right-shifted
+    'mean_y': 2,     # Top-focused
+    
+    # Standard deviations for normal distribution
+    'sigma_x': 5.0,  # Try: 1.0 for narrow, 3.0 for wide
+    'sigma_y': None,  # Try: 2.0 for narrow, 5.0 for wide
+    
+    # Log-normal control
+    'log_normal': 'y',  # Options: False, True, 'x', 'y', ['x', 'y']
+    
+    # Log-space standard deviations (for log-normal axes)
+    'log_sigma_x': 0.7,  # 0.2-0.4: tight, 0.5: moderate, 0.8-1.2: fat tails
+    'log_sigma_y': 0.7,  # 0.2-0.4: tight, 0.5: moderate, 0.8-1.2: fat tails
+    'flip_log_y': False,  # Normal log-normal for state 0
+}
+
+DISTRIBUTION_CONFIG_STATE_1 = {
+    # Perfect mirror: bottom-focused distribution using flipped log-normal
+    'mean_x': None,  # Keep centered
+    'mean_y': 2,     # Same mean position as state 0
+    
+    'sigma_x': 5.0,
+    'sigma_y': None,
+    
+    'log_normal': 'y',
+    'log_sigma_x': 0.7,
+    'log_sigma_y': 0.7,   # Same parameters as state 0
+    'flip_log_y': True,   # Flip the log-normal distribution
+}
+
+DISTRIBUTION_CONFIG_STATE_2 = {
+    # Normal (not log-normal) on both axes, centered at the centermost cell
+    'mean_x': None,   # Defaults to (inner_x - 1) / 2.0 in generate_targets
+    'mean_y': None,   # Defaults to (inner_y - 1) / 2.0 in generate_targets
+    
+    'sigma_x': 5.0,  # Defaults to inner_x / 3.0
+    'sigma_y': 5.0,  # Defaults to inner_y / 3.0
+    
+    'log_normal': False,  # Normal on both axes
+    'log_sigma_x': None,   # Unused (log_normal is False) but kept for kwarg consistency
+    'log_sigma_y': None,   # Unused (log_normal is False) but kept for kwarg consistency
+    'flip_log_y': False,
+}
 
 # Initialize global variables
-global target_queue  # Queue of upcoming targets
-global active_target  # Currently active target
-global target_distribution  # Normalized distribution for visualization
-
-# Initialize grid dimensions explicitly
+global target_queue
+global active_target
+global target_distribution
 global grid_cells_x
 global grid_cells_y
+global initial_cell_counts
+global max_initial_count
+global flip_state
+
 grid_cells_x = grid_x
 grid_cells_y = grid_y
+initial_cell_counts = {}
+max_initial_count = 1
 
-# Initialize target landscape with deterministic distribution
-_, _, target_queue, target_distribution, active_target = generate_targets(grid_cells_x, grid_cells_y, max_targets_per_cell)
+# Initialize flip state variables
+# -------------------------------------------------------------------
+# Pseudorandom flip schedule: 50 trials per state (0, 1, 2),
+# permuted such that no run of identical states exceeds
+# MAX_CONSECUTIVE_SAME_STATE. Direct port of the algorithm in
+# clickbait_dry_morris_maze_task_switching_blocks.py, generalized
+# to three states.
+# -------------------------------------------------------------------
+TRIALS_PER_STATE = 50
+MAX_CONSECUTIVE_SAME_STATE = 4
 
-"""
-Global variables
-"""
-# Initialize reward variables
-global trial_count
-global reward_left_count
-global reward_right_count
-global reward_state
-global click
-global click_start_time
-global drinking
-global reward_left
-global reward_right
-global reward_left_start_time
-global reward_right_start_time
+def generate_flip_schedule():
+    """Build a pseudorandom trial-by-trial flip-state schedule with
+    TRIALS_PER_STATE trials of each of states 0, 1, 2, shuffled so that
+    no run of the same state exceeds MAX_CONSECUTIVE_SAME_STATE.
+    """
+    schedule = ([0] * TRIALS_PER_STATE +
+                [1] * TRIALS_PER_STATE +
+                [2] * TRIALS_PER_STATE)
+    random.shuffle(schedule)
+    
+    # Scan-and-fix: find runs exceeding the max and swap the first excess
+    # element with the nearest different-valued element that won't create
+    # a new violation at the destination.
+    for _safety in range(1000):
+        # Find first run that exceeds the limit
+        violation = -1
+        i = 0
+        while i < len(schedule):
+            run_start = i
+            while i < len(schedule) and schedule[i] == schedule[run_start]:
+                i += 1
+            if i - run_start > MAX_CONSECUTIVE_SAME_STATE:
+                violation = run_start + MAX_CONSECUTIVE_SAME_STATE
+                break
+        
+        if violation == -1:
+            break  # No violations remain
+        
+        swap_val = schedule[violation]
+        
+        # Search for nearest safe swap partner: a different-valued element
+        # whose neighbours wouldn't form an over-long run of swap_val once
+        # swap_val takes its place.
+        best_j = None
+        best_dist = len(schedule)
+        for j in range(len(schedule)):
+            if schedule[j] == swap_val:
+                continue
+            run_at_j = 1
+            k = j - 1
+            while k >= 0 and schedule[k] == swap_val:
+                run_at_j += 1
+                k -= 1
+            k = j + 1
+            while k < len(schedule) and schedule[k] == swap_val:
+                run_at_j += 1
+                k += 1
+            if run_at_j <= MAX_CONSECUTIVE_SAME_STATE:
+                dist = abs(j - violation)
+                if dist < best_dist:
+                    best_dist = dist
+                    best_j = j
+        
+        if best_j is not None:
+            schedule[violation], schedule[best_j] = schedule[best_j], schedule[violation]
+        else:
+            random.shuffle(schedule)
+    
+    return schedule
 
+global flip_schedule
+global flip_schedule_index
+
+flip_schedule = generate_flip_schedule()
+flip_schedule_index = 0
+flip_state = flip_schedule[0]
+
+# Per-state target queues / active targets / distributions for depletion.
+# Indexed by flip_state (0, 1, 2). Encountered targets are NOT regenerated
+# when flip_state changes — each state's queue persists across flips and
+# only regenerates when its own queue is fully exhausted.
+global target_queues
+global active_targets
+global target_distributions
+
+target_queues = [None, None, None]
+active_targets = [None, None, None]
+target_distributions = [None, None, None]
+
+for _state in range(3):
+    if _state == 0:
+        _cfg = DISTRIBUTION_CONFIG_STATE_0
+    elif _state == 1:
+        _cfg = DISTRIBUTION_CONFIG_STATE_1
+    else:
+        _cfg = DISTRIBUTION_CONFIG_STATE_2
+    _, _, _q, _d, _a = generate_targets(
+        grid_cells_x, grid_cells_y, max_targets_per_cell, **_cfg
+    )
+    target_queues[_state] = _q
+    active_targets[_state] = _a
+    target_distributions[_state] = _d
+
+# Bind the per-frame views to the current state
+target_queue = target_queues[flip_state]
+active_target = active_targets[flip_state]
+target_distribution = target_distributions[flip_state]
+
+# Initialize other global variables (unchanged from your original)
 trial_count = 0
 reward_left_count = 0
 reward_right_count = 0
@@ -303,15 +521,6 @@ reward_right = False
 reward_left_start_time = 0
 reward_right_start_time = 0
 
-# ITI Variables
-global iti_start_time
-global iti_duration
-global in_iti
-global withdrawal_start_time
-global in_withdrawal_period
-global prev_poke_left
-global prev_poke_right
-
 iti_start_time = 0
 iti_duration = 0
 in_iti = False
@@ -319,6 +528,8 @@ withdrawal_start_time = 0
 in_withdrawal_period = False
 prev_poke_left = False
 prev_poke_right = False
+prev_centroid_x = 0
+prev_centroid_y = 0
 
 """
 # Visualization parameters
@@ -359,21 +570,48 @@ def process(value):
     global prev_poke_right
     global grid_cells_x
     global grid_cells_y
+    global flip_state
+    global flip_schedule
+    global flip_schedule_index
+    global target_queues
+    global active_targets
+    global target_distributions
+    global prev_centroid_x
+    global prev_centroid_y
+
 
     # Timing-related vars
     current_time = time.time()
-    reward_duration_left = 0.032
-    reward_duration_right = 0.032
+    reward_duration_left = 0.037
+    reward_duration_right = 0.037
     click_duration = 0.1
     iti_duration_min = 1.0
-    iti_duration_max = 5.0
+    iti_duration_max = 3.0
     withdrawal_duration = 0.5
     
     # Flag to track if target was found in this frame
     target_found_this_frame = False
+    # Flag to track if we just completed a trial
+    trial_completed_this_frame = False
 
     # Load realtime variables from Zip node
     centroid_x, centroid_y, image = value[0].Item1, value[0].Item2, value[0].Item3
+
+    # Handle NaNs in SLEAP Tracking by using previous valid position
+    if math.isnan(centroid_x):
+        centroid_x = prev_centroid_x
+    else:
+        centroid_x = int(centroid_x*2)
+        prev_centroid_x = centroid_x
+
+    if math.isnan(centroid_y):
+        centroid_y = prev_centroid_y
+    else:
+        centroid_y = int(centroid_y*2)
+        prev_centroid_y = centroid_y
+
+            
+
     poke_left, poke_right = bool(value[1][0]), bool(value[1][1])
 
     # Process grid and canvas
@@ -404,12 +642,46 @@ def process(value):
     if in_iti:
         if current_time - iti_start_time >= iti_duration:
             trial_count += 1
+            trial_completed_this_frame = True
             in_iti = False
             
-            # Set next target if we need to (only if active target is None)
-            if active_target is None and target_queue:
-                active_target = target_queue[0]
-                target_queue = target_queue[1:]
+            # Save the current state's queue/active back to its slot
+            # (active_target was consumed at trial start; nothing else changed)
+            target_queues[flip_state] = target_queue
+            active_targets[flip_state] = active_target
+            target_distributions[flip_state] = target_distribution
+            
+            # Advance flip schedule
+            flip_schedule_index += 1
+            if flip_schedule_index < len(flip_schedule):
+                next_state = flip_schedule[flip_schedule_index]
+            else:
+                next_state = flip_state  # Schedule exhausted — hold current state
+            
+            flip_state = next_state
+            
+            # Load the new state's queue/active
+            target_queue = target_queues[flip_state]
+            active_target = active_targets[flip_state]
+            target_distribution = target_distributions[flip_state]
+            
+            # Pop the next active target for this state's trial.
+            # Regenerate ONLY if both the active target and the queue are empty
+            # (i.e. this state's pool has been fully depleted).
+            if active_target is None:
+                if target_queue:
+                    active_target = target_queue[0]
+                    target_queue = target_queue[1:]
+                else:
+                    # Pool exhausted for this state — regenerate
+                    current_config = get_current_distribution_config()
+                    _, _, target_queue, target_distribution, active_target = generate_targets(
+                        grid_cells_x, grid_cells_y, max_targets_per_cell, **current_config
+                    )
+                # Persist the popped/regenerated state back to its slot
+                target_queues[flip_state] = target_queue
+                active_targets[flip_state] = active_target
+                target_distributions[flip_state] = target_distribution
             
     elif in_withdrawal_period:
         if not (poke_left or poke_right):  # Mouse has withdrawn
@@ -452,7 +724,7 @@ def process(value):
     # Convert target_queue to tuple for return
     queue_tuple = tuple(target_queue) if target_queue else tuple()
     
-    # Return values
+    # Return values (added flip_state at the end)
     return (canvas, Point(centroid_x, centroid_y), reward_state, reward_left, reward_right, 
             poke_left, poke_right, drinking, in_iti, click, active_target, 
-            trial_count, reward_left_count, reward_right_count, tuple(target_distribution))
+            trial_count, reward_left_count, reward_right_count, tuple(target_distribution), flip_state)

@@ -2182,7 +2182,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>051026</Value>
+          <Value>051626</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -2194,7 +2194,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="FloatProperty">
-          <Value>45</Value>
+          <Value>30</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -2206,7 +2206,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>9004-boolstr</Value>
+          <Value>9004</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -2218,7 +2218,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>o0</Value>
+          <Value>o4</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
