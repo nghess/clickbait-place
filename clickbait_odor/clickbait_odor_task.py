@@ -520,6 +520,8 @@ reward_left = False
 reward_right = False
 reward_left_start_time = 0
 reward_right_start_time = 0
+reward_state_start_time = 0
+reward_timeout_count = 0
 
 iti_start_time = 0
 iti_duration = 0
@@ -561,6 +563,8 @@ def process(value):
     global reward_right
     global reward_left_start_time
     global reward_right_start_time
+    global reward_state_start_time
+    global reward_timeout_count
     global iti_start_time
     global iti_duration
     global in_iti
@@ -588,6 +592,7 @@ def process(value):
     iti_duration_min = 1.0
     iti_duration_max = 3.0
     withdrawal_duration = 0.5
+    reward_timeout_duration = 10.0  # Seconds from entering reward_state to first poke before trial aborts
     
     # Flag to track if target was found in this frame
     target_found_this_frame = False
@@ -637,6 +642,7 @@ def process(value):
             reward_state = True
             click = True
             click_start_time = current_time
+            reward_state_start_time = current_time
 
     # State machine logic
     if in_iti:
@@ -694,7 +700,17 @@ def process(value):
             withdrawal_start_time = current_time
             
     elif reward_state:
-        if reward_left and current_time - reward_left_start_time >= reward_duration_left:
+        # Timeout: if the mouse hasn't initiated reward delivery within
+        # reward_timeout_duration seconds, abort the trial and advance.
+        # Only applies before any poke triggers reward delivery — once a
+        # reward is being delivered, the normal duration-based exits handle it.
+        if (not reward_left and not reward_right and
+                current_time - reward_state_start_time >= reward_timeout_duration):
+            reward_state = False
+            reward_timeout_count += 1
+            in_withdrawal_period = True
+            withdrawal_start_time = current_time
+        elif reward_left and current_time - reward_left_start_time >= reward_duration_left:
             reward_left = False
             in_withdrawal_period = True
             withdrawal_start_time = current_time
