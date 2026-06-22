@@ -720,8 +720,8 @@ def process(value):
 
     # Timing-related vars
     current_time = time.time()
-    reward_duration_left = 0.035
-    reward_duration_right = 0.035
+    reward_duration_left = 0.032
+    reward_duration_right = 0.032
     click_duration = 0.1
     iti_duration_min = 1.0
     iti_duration_max = 3.0
@@ -916,7 +916,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:VideoWriter">
-          <cv:FileName>D:\clickbait-place\data\cbm-odor\9004\o6\051926_9004_o6.avi</cv:FileName>
+          <cv:FileName>D:\clickbait-place\data\cbm-vision\test\z1\062226_test_z1.avi</cv:FileName>
           <cv:Suffix>None</cv:Suffix>
           <cv:Buffered>true</cv:Buffered>
           <cv:Overwrite>false</cv:Overwrite>
@@ -944,7 +944,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\cbm-odor\9004\o6\051926_9004_o6_video_timestamp.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\cbm-vision\test\z1\062226_test_z1_video_timestamp.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -1069,7 +1069,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\cbm-odor\9004\o6\051926_9004_o6_eventsA.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\cbm-vision\test\z1\062226_test_z1_eventsA.csv</io:FileName>
         <io:Delimiter>,</io:Delimiter>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
@@ -1193,7 +1193,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="io:WriteAllText">
-          <io:Path>D:\clickbait-place\data\cbm-odor\9004\o6\051926_9004_o6_trialcounts.txt</io:Path>
+          <io:Path>D:\clickbait-place\data\cbm-vision\test\z1\062226_test_z1_trialcounts.txt</io:Path>
           <io:Overwrite>true</io:Overwrite>
           <io:Append>false</io:Append>
         </Combinator>
@@ -1213,7 +1213,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\clickbait-place\data\cbm-odor\9004\o6\051926_9004_o6_eventsB.csv</io:FileName>
+        <io:FileName>D:\clickbait-place\data\cbm-vision\test\z1\062226_test_z1_eventsB.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>false</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -1224,29 +1224,44 @@ def process(value):
         <Description />
         <Workflow>
           <Nodes>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>Flip State</Name>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="SubscribeSubject">
+                <Name>Flip State</Name>
+              </Builder>
             </Expression>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>Session Number</Name>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="SubscribeSubject">
+                <Name>Session Number</Name>
+              </Builder>
             </Expression>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>ITI</Name>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="SubscribeSubject">
+                <Name>ITI</Name>
+              </Builder>
             </Expression>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>Reward State</Name>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="SubscribeSubject">
+                <Name>Reward State</Name>
+              </Builder>
             </Expression>
-            <Expression xsi:type="SubscribeSubject">
-              <Name>Active Target</Name>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="SubscribeSubject">
+                <Name>Active Target</Name>
+              </Builder>
             </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="rx:CombineLatest" />
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="rx:CombineLatest" />
+              </Builder>
             </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="rx:WithLatestFrom" />
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="rx:WithLatestFrom" />
+              </Builder>
             </Expression>
-            <Expression xsi:type="ipy:PythonTransform">
-              <ipy:Script>@returns(tuple)
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="ipy:PythonTransform">
+                <ipy:Script>@returns(tuple)
 def process(value):
     flip_state = value.Item1
     reward_state = value.Item2[2]
@@ -1287,42 +1302,55 @@ def process(value):
 
     return (left_air, right_air, fans)
 </ipy:Script>
+              </Builder>
             </Expression>
-            <Expression xsi:type="ipy:PythonTransform">
-              <ipy:Name>Left Air</ipy:Name>
-              <ipy:Script>@returns(bool)
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="ipy:PythonTransform">
+                <ipy:Name>Left Air</ipy:Name>
+                <ipy:Script>@returns(bool)
 def process(value):
   return value[0]</ipy:Script>
+              </Builder>
             </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="ard:DigitalOutput">
-                <ard:PortName>Arduino Mega 2560</ard:PortName>
-                <ard:Pin>48</ard:Pin>
-              </Combinator>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="ard:DigitalOutput">
+                  <ard:PortName>Arduino Mega 2560</ard:PortName>
+                  <ard:Pin>48</ard:Pin>
+                </Combinator>
+              </Builder>
             </Expression>
-            <Expression xsi:type="ipy:PythonTransform">
-              <ipy:Name>Right Air</ipy:Name>
-              <ipy:Script>@returns(bool)
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="ipy:PythonTransform">
+                <ipy:Name>Right Air</ipy:Name>
+                <ipy:Script>@returns(bool)
 def process(value):
   return value[1]</ipy:Script>
+              </Builder>
             </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="ard:DigitalOutput">
-                <ard:PortName>Arduino Mega 2560</ard:PortName>
-                <ard:Pin>49</ard:Pin>
-              </Combinator>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="ard:DigitalOutput">
+                  <ard:PortName>Arduino Mega 2560</ard:PortName>
+                  <ard:Pin>49</ard:Pin>
+                </Combinator>
+              </Builder>
             </Expression>
-            <Expression xsi:type="ipy:PythonTransform">
-              <ipy:Name>Overhead Fans</ipy:Name>
-              <ipy:Script>@returns(int)
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="ipy:PythonTransform">
+                <ipy:Name>Overhead Fans</ipy:Name>
+                <ipy:Script>@returns(int)
 def process(value):
   return int(value[2])</ipy:Script>
+              </Builder>
             </Expression>
-            <Expression xsi:type="Combinator">
-              <Combinator xsi:type="ard:AnalogOutput">
-                <ard:PortName>Arduino Mega 2560</ard:PortName>
-                <ard:Pin>3</ard:Pin>
-              </Combinator>
+            <Expression xsi:type="Disable">
+              <Builder xsi:type="Combinator">
+                <Combinator xsi:type="ard:AnalogOutput">
+                  <ard:PortName>Arduino Mega 2560</ard:PortName>
+                  <ard:Pin>3</ard:Pin>
+                </Combinator>
+              </Builder>
             </Expression>
           </Nodes>
           <Edges>
@@ -1346,297 +1374,163 @@ def process(value):
         <Name>Monitor Flip</Name>
         <Workflow>
           <Nodes>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="Combinator">
-                <Combinator xsi:type="gl:CreateWindow">
-                  <gl:Width>3840</gl:Width>
-                  <gl:Height>1280</gl:Height>
-                  <gl:VSync>On</gl:VSync>
-                  <gl:SwapSync>false</gl:SwapSync>
-                  <gl:ClearColor>White</gl:ClearColor>
-                  <gl:ClearMask>DepthBufferBit ColorBufferBit</gl:ClearMask>
-                  <gl:CursorVisible>true</gl:CursorVisible>
-                  <gl:Location>
-                    <gl:X>3840</gl:X>
-                    <gl:Y>0</gl:Y>
-                  </gl:Location>
-                  <gl:WindowBorder>Hidden</gl:WindowBorder>
-                  <gl:WindowState>Normal</gl:WindowState>
-                  <gl:DisplayDevice>Primary</gl:DisplayDevice>
-                  <gl:TargetRenderFrequency>30</gl:TargetRenderFrequency>
-                  <gl:TargetUpdateFrequency xsi:nil="true" />
-                  <gl:RenderState />
-                  <gl:GraphicsMode>
-                    <gl:ColorFormat>
-                      <gl:Red>8</gl:Red>
-                      <gl:Green>8</gl:Green>
-                      <gl:Blue>8</gl:Blue>
-                      <gl:Alpha>8</gl:Alpha>
-                    </gl:ColorFormat>
-                    <gl:Depth>16</gl:Depth>
-                    <gl:Stencil>0</gl:Stencil>
-                    <gl:Samples>0</gl:Samples>
-                    <gl:AccumulatorFormat>
-                      <gl:Red>0</gl:Red>
-                      <gl:Green>0</gl:Green>
-                      <gl:Blue>0</gl:Blue>
-                      <gl:Alpha>0</gl:Alpha>
-                    </gl:AccumulatorFormat>
-                    <gl:Buffers>2</gl:Buffers>
-                    <gl:Stereo>false</gl:Stereo>
-                  </gl:GraphicsMode>
-                </Combinator>
-              </Builder>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="gl:CreateWindow">
+                <gl:Width>3840</gl:Width>
+                <gl:Height>1280</gl:Height>
+                <gl:VSync>On</gl:VSync>
+                <gl:SwapSync>false</gl:SwapSync>
+                <gl:ClearColor>White</gl:ClearColor>
+                <gl:ClearMask>DepthBufferBit ColorBufferBit</gl:ClearMask>
+                <gl:CursorVisible>true</gl:CursorVisible>
+                <gl:Location>
+                  <gl:X>3840</gl:X>
+                  <gl:Y>0</gl:Y>
+                </gl:Location>
+                <gl:WindowBorder>Hidden</gl:WindowBorder>
+                <gl:WindowState>Normal</gl:WindowState>
+                <gl:DisplayDevice>Primary</gl:DisplayDevice>
+                <gl:TargetRenderFrequency>30</gl:TargetRenderFrequency>
+                <gl:TargetUpdateFrequency xsi:nil="true" />
+                <gl:RenderState />
+                <gl:GraphicsMode>
+                  <gl:ColorFormat>
+                    <gl:Red>8</gl:Red>
+                    <gl:Green>8</gl:Green>
+                    <gl:Blue>8</gl:Blue>
+                    <gl:Alpha>8</gl:Alpha>
+                  </gl:ColorFormat>
+                  <gl:Depth>16</gl:Depth>
+                  <gl:Stencil>0</gl:Stencil>
+                  <gl:Samples>0</gl:Samples>
+                  <gl:AccumulatorFormat>
+                    <gl:Red>0</gl:Red>
+                    <gl:Green>0</gl:Green>
+                    <gl:Blue>0</gl:Blue>
+                    <gl:Alpha>0</gl:Alpha>
+                  </gl:AccumulatorFormat>
+                  <gl:Buffers>2</gl:Buffers>
+                  <gl:Stereo>false</gl:Stereo>
+                </gl:GraphicsMode>
+              </Combinator>
             </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="IncludeWorkflow" Path="BonVision:Primitives.BonVisionResources.bonsai" />
+            <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.BonVisionResources.bonsai" />
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="gl:TextureResources">
+                <gl:Textures>
+                  <gl:TextureConfiguration xsi:type="gl:VideoTexture">
+                    <gl:Name>visual_stim_circle</gl:Name>
+                    <gl:Width>1280</gl:Width>
+                    <gl:Height>1920</gl:Height>
+                    <gl:InternalFormat>Rgba</gl:InternalFormat>
+                    <gl:WrapS>Repeat</gl:WrapS>
+                    <gl:WrapT>Repeat</gl:WrapT>
+                    <gl:MinFilter>Linear</gl:MinFilter>
+                    <gl:MagFilter>Linear</gl:MagFilter>
+                    <gl:FileName>stimuli\black_circle.mp4</gl:FileName>
+                    <gl:FlipMode>Vertical</gl:FlipMode>
+                    <gl:FrameCount xsi:nil="true" />
+                    <gl:StartPosition>0</gl:StartPosition>
+                    <gl:BufferLength xsi:nil="true" />
+                  </gl:TextureConfiguration>
+                </gl:Textures>
+              </Combinator>
             </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="Combinator">
-                <Combinator xsi:type="gl:TextureResources">
-                  <gl:Textures>
-                    <gl:TextureConfiguration xsi:type="gl:VideoTexture">
-                      <gl:Name>stimulus_monitor_2</gl:Name>
-                      <gl:Width>1280</gl:Width>
-                      <gl:Height>1920</gl:Height>
-                      <gl:InternalFormat>Rgba</gl:InternalFormat>
-                      <gl:WrapS>Repeat</gl:WrapS>
-                      <gl:WrapT>Repeat</gl:WrapT>
-                      <gl:MinFilter>Linear</gl:MinFilter>
-                      <gl:MagFilter>Linear</gl:MagFilter>
-                      <gl:FileName>stimuli\triangle.mp4</gl:FileName>
-                      <gl:FlipMode>Vertical</gl:FlipMode>
-                      <gl:FrameCount xsi:nil="true" />
-                      <gl:StartPosition>0</gl:StartPosition>
-                      <gl:BufferLength xsi:nil="true" />
-                    </gl:TextureConfiguration>
-                    <gl:TextureConfiguration xsi:type="gl:VideoTexture">
-                      <gl:Name>blank_screen</gl:Name>
-                      <gl:Width>1280</gl:Width>
-                      <gl:Height>1920</gl:Height>
-                      <gl:InternalFormat>Rgba</gl:InternalFormat>
-                      <gl:WrapS>Repeat</gl:WrapS>
-                      <gl:WrapT>Repeat</gl:WrapT>
-                      <gl:MinFilter>Linear</gl:MinFilter>
-                      <gl:MagFilter>Linear</gl:MagFilter>
-                      <gl:FileName>stimuli\blank_white.mp4</gl:FileName>
-                      <gl:FlipMode>Vertical</gl:FlipMode>
-                      <gl:FrameCount xsi:nil="true" />
-                      <gl:StartPosition>0</gl:StartPosition>
-                      <gl:BufferLength xsi:nil="true" />
-                    </gl:TextureConfiguration>
-                  </gl:Textures>
-                </Combinator>
-              </Builder>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="res:LoadResources" />
             </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="Combinator">
-                <Combinator xsi:type="res:LoadResources" />
-              </Builder>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="gl:RenderFrame" />
             </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="Combinator">
-                <Combinator xsi:type="gl:RenderFrame" />
-              </Builder>
+            <Expression xsi:type="IncludeWorkflow" Path="BonVision:Environment.NormalizedView.bonsai" />
+            <Expression xsi:type="rx:PublishSubject">
+              <Name>Draw</Name>
             </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="IncludeWorkflow" Path="BonVision:Environment.NormalizedView.bonsai" />
+            <Expression xsi:type="SubscribeSubject">
+              <Name>Draw</Name>
             </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="rx:PublishSubject">
-                <Name>Draw</Name>
-              </Builder>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>Flip State</Name>
             </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="SubscribeSubject">
-                <Name>Draw</Name>
-              </Builder>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>Session Number</Name>
             </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="SubscribeSubject">
-                <Name>Flip State</Name>
-              </Builder>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>ITI</Name>
             </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="SubscribeSubject">
-                <Name>Session Number</Name>
-              </Builder>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>Reward State</Name>
             </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="Combinator">
-                <Combinator xsi:type="rx:WithLatestFrom" />
-              </Builder>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>Active Target</Name>
             </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="ipy:PythonTransform">
-                <ipy:Script>@returns(float)
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:CombineLatest" />
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:WithLatestFrom" />
+            </Expression>
+            <Expression xsi:type="ipy:PythonTransform">
+              <ipy:Script>@returns(float)
 def process(value):
     flip_state = value.Item1
-    if flip_state == 1:
-      return -1.5
-    else:
-      return 1.5</ipy:Script>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="PropertyMapping">
-                <PropertyMappings>
-                  <Property Name="LocationX" />
-                </PropertyMappings>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawVideo.bonsai">
-                <TextureName>stimulus_monitor_2</TextureName>
-                <PlaybackRate>0</PlaybackRate>
-                <Loop>true</Loop>
-                <Angle>0</Angle>
-                <ExtentX>2.96</ExtentX>
-                <ExtentY>2</ExtentY>
-                <LocationX>1.5</LocationX>
-                <LocationY>0</LocationY>
-                <ScaleX>1</ScaleX>
-                <ScaleY>1</ScaleY>
-                <ShiftX>0</ShiftX>
-                <ShiftY>0</ShiftY>
-                <Layer>0</Layer>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="SubscribeSubject">
-                <Name>Draw</Name>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="SubscribeSubject">
-                <Name>Flip State</Name>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="SubscribeSubject">
-                <Name>Session Number</Name>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="SubscribeSubject">
-                <Name>ITI</Name>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="SubscribeSubject">
-                <Name>Reward State</Name>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="SubscribeSubject">
-                <Name>Active Target</Name>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="Combinator">
-                <Combinator xsi:type="rx:CombineLatest" />
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="Combinator">
-                <Combinator xsi:type="rx:WithLatestFrom" />
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="ipy:PythonTransform">
-                <ipy:Script>@returns(float)
-def process(value):
-    flip_state = value.Item1
-    session_num = value.Item2[0]
-    iti_bool = value.Item2[1]
     reward_state = value.Item2[2]
     active_target = value.Item2[3]
-    trial_phase = str(value.Item2[4])
+
+    left_air = False
+    right_air = False
+    fans = 0
 
 
-    if trial_phase == "platform" and not reward_state:
-      if active_target is None:
-          return float(1000)
-      elif flip_state == 1 and iti_bool == False:
-          return float(1.5)
-      elif flip_state == 0 and iti_bool == False:
-          return float(-1.5)
-      else:
-          return float(1000)
+    if active_target is not None:
+        if flip_state == 0:
+            #left_air = True
+            #right_air = False
+            #fans = 0   
+            return float(-1.5)
+        elif flip_state == 1:
+            # left_air = False
+            # right_air = True
+            # fans = 0
+            return float(1.5)
+        elif flip_state == 2:
+            # left_air = False
+            # right_air = False
+            # fans = 128
+            return float(1000)
+
+    elif active_target is None and reward_state == True:
+        # left_air = False
+        # right_air = False
+        # fans = 255
+        return float(1000)
+
     else:
-          return float(1000)</ipy:Script>
-              </Builder>
+        # left_air = False
+        # right_air = False
+        # fans = 0
+        return float(1000)
+</ipy:Script>
             </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="PropertyMapping">
-                <PropertyMappings>
-                  <Property Name="LocationX" />
-                </PropertyMappings>
-              </Builder>
+            <Expression xsi:type="PropertyMapping">
+              <PropertyMappings>
+                <Property Name="LocationX" />
+              </PropertyMappings>
             </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawVideo.bonsai">
-                <TextureName>circle</TextureName>
-                <PlaybackRate>0</PlaybackRate>
-                <Loop>true</Loop>
-                <Angle>0</Angle>
-                <ExtentX>2.96</ExtentX>
-                <ExtentY>2</ExtentY>
-                <LocationX>1000</LocationX>
-                <LocationY>0</LocationY>
-                <ScaleX>1</ScaleX>
-                <ScaleY>1</ScaleY>
-                <ShiftX>0</ShiftX>
-                <ShiftY>0</ShiftY>
-                <Layer>0</Layer>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="SubscribeSubject">
-                <Name>Draw</Name>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="ipy:PythonTransform">
-                <ipy:Script>@returns(float)
-def process(value):
-    flip_state = value.Item1
-    session_num = value.Item2[0]
-    iti_bool = value.Item2[1]
-    reward_state = value.Item2[2]
-    active_target = value.Item2[3]
-    trial_phase = str(value.Item2[4])
-
-
-    if trial_phase == "interim" and not iti_bool:
-          return float(1.5)
-    else:
-          return float(1000)</ipy:Script>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="PropertyMapping">
-                <PropertyMappings>
-                  <Property Name="LocationX" />
-                </PropertyMappings>
-              </Builder>
-            </Expression>
-            <Expression xsi:type="Disable">
-              <Builder xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawVideo.bonsai">
-                <TextureName>noise</TextureName>
-                <PlaybackRate>0</PlaybackRate>
-                <Loop>true</Loop>
-                <Angle>0</Angle>
-                <ExtentX>8</ExtentX>
-                <ExtentY>2</ExtentY>
-                <LocationX>1.5</LocationX>
-                <LocationY>0</LocationY>
-                <ScaleX>1</ScaleX>
-                <ScaleY>1</ScaleY>
-                <ShiftX>0</ShiftX>
-                <ShiftY>0</ShiftY>
-                <Layer>0</Layer>
-              </Builder>
+            <Expression xsi:type="IncludeWorkflow" Path="BonVision:Primitives.DrawVideo.bonsai">
+              <TextureName>visual_stim_circle</TextureName>
+              <PlaybackRate>0</PlaybackRate>
+              <Loop>true</Loop>
+              <Angle>0</Angle>
+              <ExtentX>2.96</ExtentX>
+              <ExtentY>2</ExtentY>
+              <LocationX>1000</LocationX>
+              <LocationY>0</LocationY>
+              <ScaleX>1</ScaleX>
+              <ScaleY>1</ScaleY>
+              <ShiftX>0</ShiftX>
+              <ShiftY>0</ShiftY>
+              <Layer>0</Layer>
             </Expression>
           </Nodes>
           <Edges>
@@ -1645,26 +1539,16 @@ def process(value):
             <Edge From="2" To="3" Label="Source1" />
             <Edge From="4" To="5" Label="Source1" />
             <Edge From="5" To="6" Label="Source1" />
-            <Edge From="7" To="13" Label="Source1" />
-            <Edge From="8" To="10" Label="Source1" />
-            <Edge From="9" To="10" Label="Source2" />
-            <Edge From="10" To="11" Label="Source1" />
-            <Edge From="11" To="12" Label="Source1" />
-            <Edge From="12" To="13" Label="Source2" />
-            <Edge From="14" To="24" Label="Source1" />
-            <Edge From="15" To="21" Label="Source1" />
-            <Edge From="16" To="20" Label="Source1" />
-            <Edge From="17" To="20" Label="Source2" />
-            <Edge From="18" To="20" Label="Source3" />
-            <Edge From="19" To="20" Label="Source4" />
-            <Edge From="20" To="21" Label="Source2" />
-            <Edge From="21" To="22" Label="Source1" />
-            <Edge From="21" To="26" Label="Source1" />
-            <Edge From="22" To="23" Label="Source1" />
-            <Edge From="23" To="24" Label="Source2" />
-            <Edge From="25" To="28" Label="Source1" />
-            <Edge From="26" To="27" Label="Source1" />
-            <Edge From="27" To="28" Label="Source2" />
+            <Edge From="7" To="17" Label="Source1" />
+            <Edge From="8" To="14" Label="Source1" />
+            <Edge From="9" To="13" Label="Source1" />
+            <Edge From="10" To="13" Label="Source2" />
+            <Edge From="11" To="13" Label="Source3" />
+            <Edge From="12" To="13" Label="Source4" />
+            <Edge From="13" To="14" Label="Source2" />
+            <Edge From="14" To="15" Label="Source1" />
+            <Edge From="15" To="16" Label="Source1" />
+            <Edge From="16" To="17" Label="Source2" />
           </Edges>
         </Workflow>
       </Expression>
@@ -2036,7 +1920,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>052026</Value>
+          <Value>062226</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -2060,7 +1944,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>9000</Value>
+          <Value>test</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -2072,7 +1956,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>o6</Value>
+          <Value>z1</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -2084,7 +1968,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>cbm-odor</Value>
+          <Value>cbm-vision</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">

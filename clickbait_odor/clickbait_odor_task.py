@@ -520,7 +520,7 @@ reward_left = False
 reward_right = False
 reward_left_start_time = 0
 reward_right_start_time = 0
-reward_state_start_time = 0
+reward_state_start_time = None  # None = timer not armed (free-reward trial 1, or post-delivery)
 reward_timeout_count = 0
 
 iti_start_time = 0
@@ -586,8 +586,8 @@ def process(value):
 
     # Timing-related vars
     current_time = time.time()
-    reward_duration_left = 0.037
-    reward_duration_right = 0.037
+    reward_duration_left = 0.035
+    reward_duration_right = 0.035
     click_duration = 0.1
     iti_duration_min = 1.0
     iti_duration_max = 3.0
@@ -704,9 +704,13 @@ def process(value):
         # reward_timeout_duration seconds, abort the trial and advance.
         # Only applies before any poke triggers reward delivery — once a
         # reward is being delivered, the normal duration-based exits handle it.
-        if (not reward_left and not reward_right and
+        # reward_state_start_time is None on the free-reward trial 1 (no
+        # target-found event), so the timer is disarmed there.
+        if (reward_state_start_time is not None and
+                not reward_left and not reward_right and
                 current_time - reward_state_start_time >= reward_timeout_duration):
             reward_state = False
+            reward_state_start_time = None
             reward_timeout_count += 1
             in_withdrawal_period = True
             withdrawal_start_time = current_time
