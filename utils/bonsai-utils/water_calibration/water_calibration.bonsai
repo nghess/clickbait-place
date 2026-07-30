@@ -9,7 +9,8 @@
     <Nodes>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="ard:CreateArduino">
-          <ard:PortName>COM3</ard:PortName>
+          <ard:Name>Arduino</ard:Name>
+          <ard:PortName>COM4</ard:PortName>
           <ard:BaudRate>57600</ard:BaudRate>
           <ard:SamplingInterval>10</ard:SamplingInterval>
         </Combinator>
@@ -30,8 +31,8 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="ard:DigitalOutput">
-          <ard:PortName>COM3</ard:PortName>
-          <ard:Pin>7</ard:Pin>
+          <ard:PortName>Arduino</ard:PortName>
+          <ard:Pin>9</ard:Pin>
         </Combinator>
       </Expression>
       <Expression xsi:type="ipy:PythonTransform">
@@ -51,8 +52,8 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="ard:DigitalOutput">
-          <ard:PortName>COM3</ard:PortName>
-          <ard:Pin>7</ard:Pin>
+          <ard:PortName>Arduino</ard:PortName>
+          <ard:Pin>10</ard:Pin>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
@@ -81,8 +82,8 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="ard:DigitalOutput">
-          <ard:PortName>COM3</ard:PortName>
-          <ard:Pin>8</ard:Pin>
+          <ard:PortName>Arduino</ard:PortName>
+          <ard:Pin>10</ard:Pin>
         </Combinator>
       </Expression>
       <Expression xsi:type="ipy:PythonTransform">
@@ -91,7 +92,7 @@ def generate():
 
 @returns(bool)
 def process(value):
-  time.sleep(.032)
+  time.sleep(.05)
   return False
 </ipy:Script>
       </Expression>
@@ -102,8 +103,8 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="ard:DigitalOutput">
-          <ard:PortName>COM3</ard:PortName>
-          <ard:Pin>8</ard:Pin>
+          <ard:PortName>Arduino</ard:PortName>
+          <ard:Pin>10</ard:Pin>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">

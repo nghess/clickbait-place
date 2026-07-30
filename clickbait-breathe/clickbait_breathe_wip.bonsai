@@ -38,22 +38,6 @@
               <mx:TerminalConfiguration>Differential</mx:TerminalConfiguration>
               <mx:VoltageUnits>Volts</mx:VoltageUnits>
             </mx:AnalogInputChannelConfiguration>
-            <mx:AnalogInputChannelConfiguration>
-              <mx:ChannelName>Reward State</mx:ChannelName>
-              <mx:MinimumValue>-10</mx:MinimumValue>
-              <mx:MaximumValue>10</mx:MaximumValue>
-              <mx:PhysicalChannel>sniff_daq/ai2</mx:PhysicalChannel>
-              <mx:TerminalConfiguration>Differential</mx:TerminalConfiguration>
-              <mx:VoltageUnits>Volts</mx:VoltageUnits>
-            </mx:AnalogInputChannelConfiguration>
-            <mx:AnalogInputChannelConfiguration>
-              <mx:ChannelName>Camera TTL</mx:ChannelName>
-              <mx:MinimumValue>-10</mx:MinimumValue>
-              <mx:MaximumValue>10</mx:MaximumValue>
-              <mx:PhysicalChannel>sniff_daq/ai3</mx:PhysicalChannel>
-              <mx:TerminalConfiguration>Differential</mx:TerminalConfiguration>
-              <mx:VoltageUnits>Volts</mx:VoltageUnits>
-            </mx:AnalogInputChannelConfiguration>
           </mx:Channels>
         </Combinator>
       </Expression>
@@ -70,7 +54,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="dsp:MatrixWriter">
-          <dsp:Path>D:\cb-breathe-test\therm\0021\h1\072726_0021_h1_daq.bin</dsp:Path>
+          <dsp:Path>D:\cb-breathe-test\therm\1poketest\h1\072726_1poketest_h1_daq.bin</dsp:Path>
           <dsp:Suffix>None</dsp:Suffix>
           <dsp:Overwrite>true</dsp:Overwrite>
           <dsp:Layout>ColumnMajor</dsp:Layout>
@@ -103,7 +87,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:VideoWriter">
-          <cv:FileName>D:\cb-breathe-test\therm\0021\h1\072726_0021_h1.avi</cv:FileName>
+          <cv:FileName>D:\cb-breathe-test\therm\1poketest\h1\072726_1poketest_h1.avi</cv:FileName>
           <cv:Suffix>None</cv:Suffix>
           <cv:Buffered>true</cv:Buffered>
           <cv:Overwrite>true</cv:Overwrite>
@@ -131,7 +115,7 @@
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\cb-breathe-test\therm\0021\h1\072726_0021_h1_video_timestamp.csv</io:FileName>
+        <io:FileName>D:\cb-breathe-test\therm\1poketest\h1\072726_1poketest_h1_video_timestamp.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>true</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -261,16 +245,25 @@ def process(value):
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="rx:Zip" />
       </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="ard:AnalogInput">
-          <ard:PortName>Arduino Mega 2560</ard:PortName>
-          <ard:Pin>7</ard:Pin>
-        </Combinator>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="Combinator">
+          <Combinator xsi:type="ard:AnalogInput">
+            <ard:PortName>Arduino Mega 2560</ard:PortName>
+            <ard:Pin>7</ard:Pin>
+          </Combinator>
+        </Builder>
       </Expression>
-      <Expression xsi:type="LessThan">
-        <Operand xsi:type="IntProperty">
-          <Value>40</Value>
-        </Operand>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="LessThan">
+          <Operand xsi:type="IntProperty">
+            <Value>40</Value>
+          </Operand>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="BooleanProperty">
+          <Value>false</Value>
+        </Combinator>
       </Expression>
       <Expression xsi:type="rx:AsyncSubject">
         <Name>Poke Left</Name>
@@ -289,27 +282,34 @@ def process(value):
       <Expression xsi:type="rx:AsyncSubject">
         <Name>Poke Right</Name>
       </Expression>
-      <Expression xsi:type="SubscribeSubject">
-        <Name>Signal</Name>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="SubscribeSubject">
+          <Name>Signal</Name>
+        </Builder>
       </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>Input ConversionTest</ipy:Name>
-        <ipy:Script>@returns(float)
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="ipy:PythonTransform">
+          <ipy:Name>Input ConversionTest</ipy:Name>
+          <ipy:Script>@returns(float)
 def process(x):
     try:
-        return float(x.Item1.GetReal(0, 0))
+        return float(x)
     except:
         return float('nan')</ipy:Script>
+        </Builder>
       </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="dsp:Buffer">
-          <dsp:Count>3</dsp:Count>
-          <dsp:Skip>1</dsp:Skip>
-        </Combinator>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="Combinator">
+          <Combinator xsi:type="dsp:Buffer">
+            <dsp:Count>3</dsp:Count>
+            <dsp:Skip>1</dsp:Skip>
+          </Combinator>
+        </Builder>
       </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>Peak detection</ipy:Name>
-        <ipy:Script>import math
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="ipy:PythonTransform">
+          <ipy:Name>Peak detection</ipy:Name>
+          <ipy:Script>import math
 
 FS = 1000.0
 DT = 1.0 / FS
@@ -331,7 +331,7 @@ last_y2 = 0.0
 
 time_elapsed = 0.0
 last_event_time = -1e9
-REFRACTORY_SEC = 0.05
+REFRACTORY_SEC = 0.025
 
 DEBUG_MODE = 0
 # 0 = pulse output
@@ -431,10 +431,12 @@ def process(value):
         return threshold
     else:
         return bool(event)</ipy:Script>
+        </Builder>
       </Expression>
-      <Expression xsi:type="ipy:PythonTransform">
-        <ipy:Name>2-target IBI</ipy:Name>
-        <ipy:Script>import math
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="ipy:PythonTransform">
+          <ipy:Name>2-target IBI</ipy:Name>
+          <ipy:Script>import math
 
 FS = 1000.0
 DT = 1.0 / FS
@@ -498,6 +500,7 @@ def process(value):
   
     else:
         return False</ipy:Script>
+        </Builder>
       </Expression>
       <Expression xsi:type="Disable">
         <Builder xsi:type="Combinator">
@@ -520,6 +523,11 @@ def process(value):
             <Value>0</Value>
           </Operand>
         </Builder>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="BooleanProperty">
+          <Value>true</Value>
+        </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="rx:CombineLatest" />
@@ -785,7 +793,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\cb-breathe-test\therm\0021\h1\072726_0021_h1_eventsA.csv</io:FileName>
+        <io:FileName>D:\cb-breathe-test\therm\1poketest\h1\072726_1poketest_h1_eventsA.csv</io:FileName>
         <io:Delimiter>,</io:Delimiter>
         <io:Append>false</io:Append>
         <io:Overwrite>true</io:Overwrite>
@@ -838,7 +846,7 @@ def process(value):
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="ard:DigitalOutput">
           <ard:PortName>Arduino Mega 2560</ard:PortName>
-          <ard:Pin>9</ard:Pin>
+          <ard:Pin>8</ard:Pin>
         </Combinator>
       </Expression>
       <Expression xsi:type="ipy:PythonTransform">
@@ -852,7 +860,7 @@ def process(value):
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="ard:DigitalOutput">
           <ard:PortName>Arduino Mega 2560</ard:PortName>
-          <ard:Pin>10</ard:Pin>
+          <ard:Pin>9</ard:Pin>
         </Combinator>
       </Expression>
       <Expression xsi:type="ipy:PythonTransform">
@@ -909,7 +917,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="io:WriteAllText">
-          <io:Path>D:\cb-breathe-test\therm\0021\h1\072726_0021_h1_trialcounts.txt</io:Path>
+          <io:Path>D:\cb-breathe-test\therm\1poketest\h1\072726_1poketest_h1_trialcounts.txt</io:Path>
           <io:Overwrite>true</io:Overwrite>
           <io:Append>false</io:Append>
         </Combinator>
@@ -926,7 +934,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\cb-breathe-test\therm\0021\h1\072726_0021_h1_eventsB.csv</io:FileName>
+        <io:FileName>D:\cb-breathe-test\therm\1poketest\h1\072726_1poketest_h1_eventsB.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>true</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -1324,7 +1332,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>0021</Value>
+          <Value>1poketest</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1435,87 +1443,89 @@ def generate():
       <Edge From="30" To="33" Label="Source1" />
       <Edge From="31" To="33" Label="Source2" />
       <Edge From="32" To="33" Label="Source3" />
-      <Edge From="33" To="49" Label="Source1" />
+      <Edge From="33" To="51" Label="Source1" />
       <Edge From="34" To="35" Label="Source1" />
       <Edge From="35" To="36" Label="Source1" />
-      <Edge From="36" To="48" Label="Source1" />
-      <Edge From="37" To="38" Label="Source1" />
+      <Edge From="36" To="37" Label="Source1" />
+      <Edge From="37" To="50" Label="Source1" />
       <Edge From="38" To="39" Label="Source1" />
-      <Edge From="39" To="48" Label="Source2" />
-      <Edge From="40" To="41" Label="Source1" />
+      <Edge From="39" To="40" Label="Source1" />
+      <Edge From="40" To="50" Label="Source2" />
       <Edge From="41" To="42" Label="Source1" />
       <Edge From="42" To="43" Label="Source1" />
       <Edge From="43" To="44" Label="Source1" />
-      <Edge From="44" To="48" Label="Source3" />
-      <Edge From="45" To="46" Label="Source1" />
+      <Edge From="44" To="45" Label="Source1" />
+      <Edge From="45" To="50" Label="Source3" />
       <Edge From="46" To="47" Label="Source1" />
-      <Edge From="47" To="48" Label="Source4" />
-      <Edge From="48" To="49" Label="Source2" />
-      <Edge From="49" To="50" Label="Source1" />
-      <Edge From="50" To="51" Label="Source1" />
-      <Edge From="50" To="52" Label="Source1" />
-      <Edge From="50" To="54" Label="Source1" />
-      <Edge From="50" To="55" Label="Source1" />
-      <Edge From="50" To="56" Label="Source1" />
-      <Edge From="50" To="57" Label="Source6" />
-      <Edge From="50" To="61" Label="Source1" />
-      <Edge From="50" To="63" Label="Source1" />
-      <Edge From="50" To="66" Label="Source1" />
-      <Edge From="50" To="68" Label="Source1" />
-      <Edge From="50" To="70" Label="Source1" />
-      <Edge From="50" To="72" Label="Source1" />
-      <Edge From="50" To="73" Label="Source1" />
-      <Edge From="51" To="57" Label="Source1" />
-      <Edge From="51" To="74" Label="Source3" />
+      <Edge From="47" To="48" Label="Source1" />
+      <Edge From="48" To="49" Label="Source1" />
+      <Edge From="49" To="50" Label="Source4" />
+      <Edge From="50" To="51" Label="Source2" />
+      <Edge From="51" To="52" Label="Source1" />
       <Edge From="52" To="53" Label="Source1" />
-      <Edge From="53" To="57" Label="Source2" />
-      <Edge From="54" To="57" Label="Source3" />
-      <Edge From="55" To="57" Label="Source4" />
-      <Edge From="56" To="57" Label="Source5" />
-      <Edge From="57" To="60" Label="Source1" />
-      <Edge From="58" To="59" Label="Source1" />
-      <Edge From="59" To="60" Label="Source2" />
-      <Edge From="61" To="62" Label="Source1" />
-      <Edge From="61" To="79" Label="Source1" />
+      <Edge From="52" To="54" Label="Source1" />
+      <Edge From="52" To="56" Label="Source1" />
+      <Edge From="52" To="57" Label="Source1" />
+      <Edge From="52" To="58" Label="Source1" />
+      <Edge From="52" To="59" Label="Source6" />
+      <Edge From="52" To="63" Label="Source1" />
+      <Edge From="52" To="65" Label="Source1" />
+      <Edge From="52" To="68" Label="Source1" />
+      <Edge From="52" To="70" Label="Source1" />
+      <Edge From="52" To="72" Label="Source1" />
+      <Edge From="52" To="74" Label="Source1" />
+      <Edge From="52" To="75" Label="Source1" />
+      <Edge From="53" To="59" Label="Source1" />
+      <Edge From="53" To="76" Label="Source3" />
+      <Edge From="54" To="55" Label="Source1" />
+      <Edge From="55" To="59" Label="Source2" />
+      <Edge From="56" To="59" Label="Source3" />
+      <Edge From="57" To="59" Label="Source4" />
+      <Edge From="58" To="59" Label="Source5" />
+      <Edge From="59" To="62" Label="Source1" />
+      <Edge From="60" To="61" Label="Source1" />
+      <Edge From="61" To="62" Label="Source2" />
       <Edge From="63" To="64" Label="Source1" />
-      <Edge From="63" To="65" Label="Source1" />
-      <Edge From="63" To="79" Label="Source2" />
-      <Edge From="66" To="67" Label="Source1" />
-      <Edge From="66" To="79" Label="Source3" />
+      <Edge From="63" To="81" Label="Source1" />
+      <Edge From="65" To="66" Label="Source1" />
+      <Edge From="65" To="67" Label="Source1" />
+      <Edge From="65" To="81" Label="Source2" />
       <Edge From="68" To="69" Label="Source1" />
-      <Edge From="68" To="79" Label="Source4" />
+      <Edge From="68" To="81" Label="Source3" />
       <Edge From="70" To="71" Label="Source1" />
-      <Edge From="70" To="79" Label="Source5" />
-      <Edge From="72" To="74" Label="Source1" />
-      <Edge From="73" To="74" Label="Source2" />
-      <Edge From="74" To="75" Label="Source1" />
-      <Edge From="75" To="78" Label="Source1" />
+      <Edge From="70" To="81" Label="Source4" />
+      <Edge From="72" To="73" Label="Source1" />
+      <Edge From="72" To="81" Label="Source5" />
+      <Edge From="74" To="76" Label="Source1" />
+      <Edge From="75" To="76" Label="Source2" />
       <Edge From="76" To="77" Label="Source1" />
-      <Edge From="77" To="78" Label="Source2" />
-      <Edge From="79" To="82" Label="Source1" />
-      <Edge From="80" To="81" Label="Source1" />
-      <Edge From="81" To="82" Label="Source2" />
-      <Edge From="84" To="85" Label="Source1" />
-      <Edge From="85" To="86" Label="Source1" />
+      <Edge From="77" To="80" Label="Source1" />
+      <Edge From="78" To="79" Label="Source1" />
+      <Edge From="79" To="80" Label="Source2" />
+      <Edge From="81" To="84" Label="Source1" />
+      <Edge From="82" To="83" Label="Source1" />
+      <Edge From="83" To="84" Label="Source2" />
+      <Edge From="86" To="87" Label="Source1" />
       <Edge From="87" To="88" Label="Source1" />
-      <Edge From="88" To="89" Label="Source1" />
+      <Edge From="89" To="90" Label="Source1" />
       <Edge From="90" To="91" Label="Source1" />
-      <Edge From="91" To="92" Label="Source1" />
+      <Edge From="92" To="93" Label="Source1" />
       <Edge From="93" To="94" Label="Source1" />
-      <Edge From="94" To="95" Label="Source1" />
+      <Edge From="95" To="96" Label="Source1" />
       <Edge From="96" To="97" Label="Source1" />
-      <Edge From="97" To="98" Label="Source1" />
+      <Edge From="98" To="99" Label="Source1" />
       <Edge From="99" To="100" Label="Source1" />
-      <Edge From="100" To="108" Label="Source1" />
-      <Edge From="101" To="108" Label="Source2" />
-      <Edge From="102" To="108" Label="Source3" />
-      <Edge From="103" To="108" Label="Source4" />
-      <Edge From="104" To="108" Label="Source5" />
-      <Edge From="105" To="108" Label="Source6" />
-      <Edge From="106" To="108" Label="Source7" />
-      <Edge From="107" To="108" Label="Source8" />
-      <Edge From="108" To="109" Label="Source1" />
-      <Edge From="109" To="110" Label="Source1" />
+      <Edge From="101" To="102" Label="Source1" />
+      <Edge From="102" To="110" Label="Source1" />
+      <Edge From="103" To="110" Label="Source2" />
+      <Edge From="104" To="110" Label="Source3" />
+      <Edge From="105" To="110" Label="Source4" />
+      <Edge From="106" To="110" Label="Source5" />
+      <Edge From="107" To="110" Label="Source6" />
+      <Edge From="108" To="110" Label="Source7" />
+      <Edge From="109" To="110" Label="Source8" />
+      <Edge From="110" To="111" Label="Source1" />
+      <Edge From="111" To="112" Label="Source1" />
     </Edges>
   </Workflow>
 </WorkflowBuilder>
