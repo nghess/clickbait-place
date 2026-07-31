@@ -1,0 +1,420 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WorkflowBuilder Version="2.9.0"
+                 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xmlns:mx="clr-namespace:Bonsai.DAQmx;assembly=Bonsai.DAQmx"
+                 xmlns:ipy="clr-namespace:Bonsai.Scripting.IronPython;assembly=Bonsai.Scripting.IronPython"
+                 xmlns:dsp="clr-namespace:Bonsai.Dsp;assembly=Bonsai.Dsp"
+                 xmlns:io="clr-namespace:Bonsai.IO;assembly=Bonsai.System"
+                 xmlns:ard="clr-namespace:Bonsai.Arduino;assembly=Bonsai.Arduino"
+                 xmlns="https://bonsai-rx.org/2018/workflow">
+  <Workflow>
+    <Nodes>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="mx:AnalogInput">
+          <mx:SignalSource />
+          <mx:SampleRate>1000</mx:SampleRate>
+          <mx:ActiveEdge>Rising</mx:ActiveEdge>
+          <mx:SampleMode>ContinuousSamples</mx:SampleMode>
+          <mx:BufferSize>10</mx:BufferSize>
+          <mx:SamplesPerChannel xsi:nil="true" />
+          <mx:Channels>
+            <mx:AnalogInputChannelConfiguration>
+              <mx:ChannelName>signal</mx:ChannelName>
+              <mx:MinimumValue>-10</mx:MinimumValue>
+              <mx:MaximumValue>10</mx:MaximumValue>
+              <mx:PhysicalChannel>Dev1/ai0</mx:PhysicalChannel>
+              <mx:TerminalConfiguration>Differential</mx:TerminalConfiguration>
+              <mx:VoltageUnits>Volts</mx:VoltageUnits>
+            </mx:AnalogInputChannelConfiguration>
+          </mx:Channels>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="ipy:PythonTransform">
+        <ipy:Name>Input ConversionTest</ipy:Name>
+        <ipy:Script>@returns(float)
+def process(x):
+    try:
+        return float(x.GetReal(0, 0))
+    except:
+        return float('nan')</ipy:Script>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="dsp:Buffer">
+          <dsp:Count>3</dsp:Count>
+          <dsp:Skip>1</dsp:Skip>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="ipy:PythonTransform">
+        <ipy:Name>Peak detection</ipy:Name>
+        <ipy:Script>import math
+
+FS = 100.0
+DT = 1.0 / FS
+
+baseline = 0.0
+baseline_initialized = False
+alpha_baseline = 0.001
+
+smooth = 0.0
+smooth_initialized = False
+alpha_smooth = 0.25
+
+noise_ema = 1.0
+noise_initialized = False
+alpha_noise = 0.01
+
+last_y1 = 0.0
+last_y2 = 0.0
+
+time_elapsed = 0.0
+last_event_time = -1e9
+REFRACTORY_SEC = 0.05
+
+DEBUG_MODE = 0
+# 0 = pulse output
+# 1 = centered raw
+# 2 = smoothed signal
+# 3 = threshold
+
+def _to_float(x):
+    try:
+        return float(x.Val0)
+    except:
+        try:
+            return float(x[0])
+        except:
+            try:
+                return float(str(x))
+            except:
+                return float('nan')
+
+@returns(float)
+def process(value):
+    global baseline, baseline_initialized
+    global smooth, smooth_initialized
+    global noise_ema, noise_initialized
+    global last_y1, last_y2
+    global time_elapsed, last_event_time
+
+    try:
+        s0 = _to_float(value[0])
+        s1 = _to_float(value[1])
+        s2 = _to_float(value[2])
+    except:
+        return 0.0
+
+    if math.isnan(s0) or math.isnan(s1) or math.isnan(s2):
+        return 0.0
+
+    time_elapsed += DT
+
+    if not baseline_initialized:
+        baseline = s1
+        baseline_initialized = True
+
+    baseline = (1.0 - alpha_baseline) * baseline + alpha_baseline * s1
+
+    x0 = s0 - baseline
+    x1 = s1 - baseline
+    x2 = s2 - baseline
+
+    # light smoothing on current sample
+    x = x1
+    if not smooth_initialized:
+        smooth = x
+        smooth_initialized = True
+    else:
+        smooth = (1.0 - alpha_smooth) * smooth + alpha_smooth * x
+
+    # update noise from sample-to-sample change
+    dx = x2 - x1
+    adx = abs(dx)
+    if not noise_initialized:
+        noise_ema = adx + 1.0
+        noise_initialized = True
+    else:
+        noise_ema = (1.0 - alpha_noise) * noise_ema + alpha_noise * adx
+
+    # 3-point smoothed local minimum test
+    y0 = last_y2
+    y1 = last_y1
+    y2 = smooth
+    last_y2 = last_y1
+    last_y1 = smooth
+
+    if time_elapsed &lt; 0.01:
+        if DEBUG_MODE == 1:
+            return x1
+        elif DEBUG_MODE == 2:
+            return smooth
+        elif DEBUG_MODE == 3:
+            return -2.0 * noise_ema
+        return 0.0
+
+    is_local_min = (y1 &lt; y0) and (y1 &lt;= y2)
+    threshold = -2.0 * noise_ema
+    enough_time = (time_elapsed - last_event_time) &gt;= REFRACTORY_SEC
+
+    event = 0.0
+    if enough_time and is_local_min and (y1 &lt; threshold):
+        event = 1.0
+        last_event_time = time_elapsed
+
+    if DEBUG_MODE == 1:
+        return x1
+    elif DEBUG_MODE == 2:
+        return smooth
+    elif DEBUG_MODE == 3:
+        return threshold
+    else:
+        return event</ipy:Script>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="io:CsvWriter">
+          <io:FileName>out\sigGenerator_events\sigGenerator_peaks_try_100hz_buffer_2.csv</io:FileName>
+          <io:Append>false</io:Append>
+          <io:Overwrite>true</io:Overwrite>
+          <io:Suffix>None</io:Suffix>
+          <io:IncludeHeader>false</io:IncludeHeader>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="io:CsvWriter">
+          <io:FileName>out\analogInput\analog_input_values_100hz_2.csv</io:FileName>
+          <io:Append>false</io:Append>
+          <io:Overwrite>true</io:Overwrite>
+          <io:Suffix>None</io:Suffix>
+          <io:IncludeHeader>false</io:IncludeHeader>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="ipy:PythonTransform">
+        <ipy:Name>2-target IBI</ipy:Name>
+        <ipy:Script>import math
+
+FS = 1000.0
+DT = 1.0 / FS
+
+time_elapsed = 0.0
+last_event_time = float('nan')
+
+DEBUG_MODE = 0
+# 0 = class output
+# 1 = ibi seconds
+# 2 = freq hz
+
+def _to_float(x):
+    try:
+        return float(x)
+    except:
+        try:
+            return float(x.Val0)
+        except:
+            try:
+                return float(x[0])
+            except:
+                try:
+                    return float(str(x))
+                except:
+                    return float('nan')
+
+@returns(float)
+def process(value):
+    global time_elapsed, last_event_time
+
+    v = _to_float(value)
+    if math.isnan(v):
+        return 0.0
+
+    time_elapsed += DT
+
+    event = (v &gt; 0.5)
+    if not event:
+        return 0.0
+
+    if math.isnan(last_event_time):
+        last_event_time = time_elapsed
+        return 0.0
+
+    ibi = time_elapsed - last_event_time
+    last_event_time = time_elapsed
+
+    if ibi &lt;= 0.0:
+        return 0.0
+
+    freq = 1.0 / ibi
+
+    if DEBUG_MODE == 1:
+        return ibi
+    elif DEBUG_MODE == 2:
+        return freq
+
+    if freq &lt; 4.0:
+        return 1.0
+    elif freq &lt; 8.0:
+        return 2.0
+    else:
+        return 3.0</ipy:Script>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="io:CsvWriter">
+          <io:FileName>out\target IBI\target_IBI_out.csv</io:FileName>
+          <io:Append>false</io:Append>
+          <io:Overwrite>true</io:Overwrite>
+          <io:Suffix>None</io:Suffix>
+          <io:IncludeHeader>false</io:IncludeHeader>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="ipy:PythonTransform">
+        <ipy:Name>3-eventTrigger-1</ipy:Name>
+        <ipy:Script>FS = 100.0
+DT = 1.0 / FS
+PULSE_SEC = 0.200
+
+TARGET_CLASS = 1.0
+# 1.0 = below 4 Hz
+# 2.0 = 4 to 8 Hz
+# 3.0 = 8 Hz and above
+
+remaining = 0.0
+
+@returns(bool)
+def process(x):
+    global remaining
+
+    try:
+        target_event = float(x)
+    except:
+        try:
+            target_event = float(x[0])
+        except:
+            target_event = 0.0
+
+    trigger = (target_event == TARGET_CLASS)
+
+    if trigger:
+        remaining = PULSE_SEC
+
+    if remaining &gt; 0.0:
+        remaining -= DT
+        return True
+    else:
+        return False</ipy:Script>
+      </Expression>
+      <Expression xsi:type="Disable">
+        <Builder xsi:type="io:CsvWriter">
+          <io:FileName>out\LED trigger\event_trigger_out.csv</io:FileName>
+          <io:Append>false</io:Append>
+          <io:Overwrite>true</io:Overwrite>
+          <io:Suffix>None</io:Suffix>
+          <io:IncludeHeader>false</io:IncludeHeader>
+        </Builder>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="ard:DigitalOutput">
+          <ard:PortName>COM3</ard:PortName>
+          <ard:Pin>22</ard:Pin>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="ipy:PythonTransform">
+        <ipy:Name>3-event Trigger 2</ipy:Name>
+        <ipy:Script>FS = 100.0
+DT = 1.0 / FS
+PULSE_SEC = 0.200
+
+TARGET_CLASS = 2.0
+# 1.0 = below 4 Hz
+# 2.0 = 4 to 8 Hz
+# 3.0 = 8 Hz and above
+
+remaining = 0.0
+
+@returns(bool)
+def process(x):
+    global remaining
+
+    try:
+        target_event = float(x)
+    except:
+        try:
+            target_event = float(x[0])
+        except:
+            target_event = 0.0
+
+    trigger = (target_event == TARGET_CLASS)
+
+    if trigger:
+        remaining = PULSE_SEC
+
+    if remaining &gt; 0.0:
+        remaining -= DT
+        return True
+    else:
+        return False</ipy:Script>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="ard:DigitalOutput">
+          <ard:PortName>COM3</ard:PortName>
+          <ard:Pin>23</ard:Pin>
+        </Combinator>
+      </Expression>
+      <Expression xsi:type="ipy:PythonTransform">
+        <ipy:Name>3-event Trigger 3</ipy:Name>
+        <ipy:Script>FS = 100.0
+DT = 1.0 / FS
+PULSE_SEC = 0.200
+
+TARGET_CLASS = 3.0
+# 1.0 = below 4 Hz
+# 2.0 = 4 to 8 Hz
+# 3.0 = 8 Hz and above
+
+remaining = 0.0
+
+@returns(bool)
+def process(x):
+    global remaining
+
+    try:
+        target_event = float(x)
+    except:
+        try:
+            target_event = float(x[0])
+        except:
+            target_event = 0.0
+
+    trigger = (target_event == TARGET_CLASS)
+
+    if trigger:
+        remaining = PULSE_SEC
+
+    if remaining &gt; 0.0:
+        remaining -= DT
+        return True
+    else:
+        return False</ipy:Script>
+      </Expression>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="ard:DigitalOutput">
+          <ard:PortName>COM3</ard:PortName>
+          <ard:Pin>24</ard:Pin>
+        </Combinator>
+      </Expression>
+    </Nodes>
+    <Edges>
+      <Edge From="0" To="1" Label="Source1" />
+      <Edge From="1" To="2" Label="Source1" />
+      <Edge From="1" To="5" Label="Source1" />
+      <Edge From="2" To="3" Label="Source1" />
+      <Edge From="3" To="4" Label="Source1" />
+      <Edge From="3" To="6" Label="Source1" />
+      <Edge From="6" To="7" Label="Source1" />
+      <Edge From="6" To="8" Label="Source1" />
+      <Edge From="6" To="11" Label="Source1" />
+      <Edge From="6" To="13" Label="Source1" />
+      <Edge From="8" To="9" Label="Source1" />
+      <Edge From="8" To="10" Label="Source1" />
+      <Edge From="11" To="12" Label="Source1" />
+      <Edge From="13" To="14" Label="Source1" />
+    </Edges>
+  </Workflow>
+</WorkflowBuilder>

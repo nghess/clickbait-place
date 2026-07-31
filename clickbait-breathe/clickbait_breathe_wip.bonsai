@@ -24,7 +24,7 @@
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="mx:AnalogInput">
           <mx:SignalSource />
-          <mx:SampleRate>3000</mx:SampleRate>
+          <mx:SampleRate>1000</mx:SampleRate>
           <mx:ActiveEdge>Rising</mx:ActiveEdge>
           <mx:SampleMode>ContinuousSamples</mx:SampleMode>
           <mx:BufferSize>1000</mx:BufferSize>
@@ -282,34 +282,27 @@ def process(value):
       <Expression xsi:type="rx:AsyncSubject">
         <Name>Poke Right</Name>
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="SubscribeSubject">
-          <Name>Signal</Name>
-        </Builder>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>Signal</Name>
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="ipy:PythonTransform">
-          <ipy:Name>Input ConversionTest</ipy:Name>
-          <ipy:Script>@returns(float)
-def process(x):
+      <Expression xsi:type="ipy:PythonTransform">
+        <ipy:Name>Input ConversionTest</ipy:Name>
+        <ipy:Script>@returns(float)
+def process(value):
     try:
-        return float(x)
+        return float(value.GetReal(0,0))
     except:
         return float('nan')</ipy:Script>
-        </Builder>
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="Combinator">
-          <Combinator xsi:type="dsp:Buffer">
-            <dsp:Count>3</dsp:Count>
-            <dsp:Skip>1</dsp:Skip>
-          </Combinator>
-        </Builder>
+      <Expression xsi:type="Combinator">
+        <Combinator xsi:type="dsp:Buffer">
+          <dsp:Count>3</dsp:Count>
+          <dsp:Skip>1</dsp:Skip>
+        </Combinator>
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="ipy:PythonTransform">
-          <ipy:Name>Peak detection</ipy:Name>
-          <ipy:Script>import math
+      <Expression xsi:type="ipy:PythonTransform">
+        <ipy:Name>Peak detection</ipy:Name>
+        <ipy:Script>import math
 
 FS = 1000.0
 DT = 1.0 / FS
@@ -431,12 +424,10 @@ def process(value):
         return threshold
     else:
         return bool(event)</ipy:Script>
-        </Builder>
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="ipy:PythonTransform">
-          <ipy:Name>2-target IBI</ipy:Name>
-          <ipy:Script>import math
+      <Expression xsi:type="ipy:PythonTransform">
+        <ipy:Name>2-target IBI</ipy:Name>
+        <ipy:Script>import math
 
 FS = 1000.0
 DT = 1.0 / FS
@@ -500,7 +491,6 @@ def process(value):
   
     else:
         return False</ipy:Script>
-        </Builder>
       </Expression>
       <Expression xsi:type="Disable">
         <Builder xsi:type="Combinator">
@@ -526,7 +516,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="BooleanProperty">
-          <Value>true</Value>
+          <Value>false</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="Combinator">
