@@ -9,7 +9,6 @@
                  xmlns:cv="clr-namespace:Bonsai.Vision;assembly=Bonsai.Vision"
                  xmlns:io="clr-namespace:Bonsai.IO;assembly=Bonsai.System"
                  xmlns:ipy="clr-namespace:Bonsai.Scripting.IronPython;assembly=Bonsai.Scripting.IronPython"
-                 xmlns:sys="clr-namespace:System;assembly=mscorlib"
                  xmlns="https://bonsai-rx.org/2018/workflow">
   <Workflow>
     <Nodes>
@@ -27,7 +26,7 @@
           <mx:SampleRate>1000</mx:SampleRate>
           <mx:ActiveEdge>Rising</mx:ActiveEdge>
           <mx:SampleMode>ContinuousSamples</mx:SampleMode>
-          <mx:BufferSize>1000</mx:BufferSize>
+          <mx:BufferSize>10</mx:BufferSize>
           <mx:SamplesPerChannel xsi:nil="true" />
           <mx:Channels>
             <mx:AnalogInputChannelConfiguration>
@@ -54,7 +53,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="dsp:MatrixWriter">
-          <dsp:Path>D:\cb-breathe-test\therm\1poketest\h1\072726_1poketest_h1_daq.bin</dsp:Path>
+          <dsp:Path>D:\cb-breathe-test\therm\0021\t1a\073126_0021_t1a_daq.bin</dsp:Path>
           <dsp:Suffix>None</dsp:Suffix>
           <dsp:Overwrite>true</dsp:Overwrite>
           <dsp:Layout>ColumnMajor</dsp:Layout>
@@ -87,7 +86,7 @@
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="cv:VideoWriter">
-          <cv:FileName>D:\cb-breathe-test\therm\1poketest\h1\072726_1poketest_h1.avi</cv:FileName>
+          <cv:FileName>D:\cb-breathe-test\therm\0021\t1a\073126_0021_t1a.avi</cv:FileName>
           <cv:Suffix>None</cv:Suffix>
           <cv:Buffered>true</cv:Buffered>
           <cv:Overwrite>true</cv:Overwrite>
@@ -115,7 +114,7 @@
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\cb-breathe-test\therm\1poketest\h1\072726_1poketest_h1_video_timestamp.csv</io:FileName>
+        <io:FileName>D:\cb-breathe-test\therm\0021\t1a\073126_0021_t1a_video_timestamp.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>true</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -304,7 +303,7 @@ def process(value):
         <ipy:Name>Peak detection</ipy:Name>
         <ipy:Script>import math
 
-FS = 1000.0
+FS = 100.0
 DT = 1.0 / FS
 
 baseline = 0.0
@@ -492,32 +491,41 @@ def process(value):
     else:
         return False</ipy:Script>
       </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="Combinator">
-          <Combinator xsi:type="rx:Timer">
-            <rx:DueTime>PT0S</rx:DueTime>
-            <rx:Period>PT10S</rx:Period>
-          </Combinator>
-        </Builder>
-      </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="Mod">
-          <Operand xsi:type="WorkflowProperty" TypeArguments="sys:Int64">
-            <Value>2</Value>
-          </Operand>
-        </Builder>
-      </Expression>
-      <Expression xsi:type="Disable">
-        <Builder xsi:type="GreaterThan">
-          <Operand xsi:type="WorkflowProperty" TypeArguments="sys:Int64">
-            <Value>0</Value>
-          </Operand>
-        </Builder>
-      </Expression>
-      <Expression xsi:type="Combinator">
-        <Combinator xsi:type="BooleanProperty">
-          <Value>false</Value>
-        </Combinator>
+      <Expression xsi:type="ipy:PythonTransform">
+        <ipy:Name>3-eventTrigger-1</ipy:Name>
+        <ipy:Script>FS = 100.0
+DT = 1.0 / FS
+PULSE_SEC = 0.200
+
+TARGET_CLASS = 1.0
+# 1.0 = below 4 Hz
+# 2.0 = 4 to 8 Hz
+# 3.0 = 8 Hz and above
+
+remaining = 0.0
+
+@returns(bool)
+def process(x):
+    global remaining
+
+    try:
+        target_event = float(x)
+    except:
+        try:
+            target_event = float(x[0])
+        except:
+            target_event = 0.0
+
+    trigger = (target_event == TARGET_CLASS)
+
+    if trigger:
+        remaining = PULSE_SEC
+
+    if remaining &gt; 0.0:
+        remaining -= DT
+        return True
+    else:
+        return False</ipy:Script>
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="rx:CombineLatest" />
@@ -783,13 +791,43 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\cb-breathe-test\therm\1poketest\h1\072726_1poketest_h1_eventsA.csv</io:FileName>
+        <io:FileName>D:\cb-breathe-test\therm\0021\t1a\073126_0021_t1a_eventsA.csv</io:FileName>
         <io:Delimiter>,</io:Delimiter>
         <io:Append>false</io:Append>
         <io:Overwrite>true</io:Overwrite>
         <io:Suffix>None</io:Suffix>
         <io:IncludeHeader>true</io:IncludeHeader>
         <io:Selector />
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>PeakDetectionFilename</Name>
+      </Expression>
+      <Expression xsi:type="PropertyMapping">
+        <PropertyMappings>
+          <Property Name="FileName" />
+        </PropertyMappings>
+      </Expression>
+      <Expression xsi:type="io:CsvWriter">
+        <io:FileName>D:\cb-breathe-test\therm\0021\t1a\073126_0021_t1a_peakdetection.csv</io:FileName>
+        <io:Append>false</io:Append>
+        <io:Overwrite>true</io:Overwrite>
+        <io:Suffix>None</io:Suffix>
+        <io:IncludeHeader>false</io:IncludeHeader>
+      </Expression>
+      <Expression xsi:type="SubscribeSubject">
+        <Name>BufferFilename</Name>
+      </Expression>
+      <Expression xsi:type="PropertyMapping">
+        <PropertyMappings>
+          <Property Name="FileName" />
+        </PropertyMappings>
+      </Expression>
+      <Expression xsi:type="io:CsvWriter">
+        <io:FileName>D:\cb-breathe-test\therm\0021\t1a\073126_0021_t1a_buffer.csv</io:FileName>
+        <io:Append>false</io:Append>
+        <io:Overwrite>true</io:Overwrite>
+        <io:Suffix>None</io:Suffix>
+        <io:IncludeHeader>false</io:IncludeHeader>
       </Expression>
       <Expression xsi:type="ipy:PythonTransform">
         <ipy:Name>ITI</ipy:Name>
@@ -907,7 +945,7 @@ def process(value):
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="io:WriteAllText">
-          <io:Path>D:\cb-breathe-test\therm\1poketest\h1\072726_1poketest_h1_trialcounts.txt</io:Path>
+          <io:Path>D:\cb-breathe-test\therm\0021\t1a\073126_0021_t1a_trialcounts.txt</io:Path>
           <io:Overwrite>true</io:Overwrite>
           <io:Append>false</io:Append>
         </Combinator>
@@ -924,7 +962,7 @@ def process(value):
         </PropertyMappings>
       </Expression>
       <Expression xsi:type="io:CsvWriter">
-        <io:FileName>D:\cb-breathe-test\therm\1poketest\h1\072726_1poketest_h1_eventsB.csv</io:FileName>
+        <io:FileName>D:\cb-breathe-test\therm\0021\t1a\073126_0021_t1a_eventsB.csv</io:FileName>
         <io:Append>false</io:Append>
         <io:Overwrite>true</io:Overwrite>
         <io:Suffix>None</io:Suffix>
@@ -1106,6 +1144,29 @@ def generate():
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="StringProperty">
+                <Value>_eventsA</Value>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>CSV</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Zip" />
+            </Expression>
+            <Expression xsi:type="Add" />
+            <Expression xsi:type="Format" />
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="io:GetFullPath" />
+            </Expression>
+            <Expression xsi:type="rx:ReplaySubject">
+              <Name>TrialEventsFilename</Name>
+              <rx:BufferSize xsi:nil="true" />
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>SessionData</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="StringProperty">
                 <Value>_trialcounts</Value>
               </Combinator>
             </Expression>
@@ -1129,7 +1190,7 @@ def generate():
             </Expression>
             <Expression xsi:type="Combinator">
               <Combinator xsi:type="StringProperty">
-                <Value>_eventsA</Value>
+                <Value>_buffer</Value>
               </Combinator>
             </Expression>
             <Expression xsi:type="SubscribeSubject">
@@ -1144,7 +1205,30 @@ def generate():
               <Combinator xsi:type="io:GetFullPath" />
             </Expression>
             <Expression xsi:type="rx:ReplaySubject">
-              <Name>TrialEventsFilename</Name>
+              <Name>BufferFilename</Name>
+              <rx:BufferSize xsi:nil="true" />
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>SessionData</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="StringProperty">
+                <Value>_peakdetection</Value>
+              </Combinator>
+            </Expression>
+            <Expression xsi:type="SubscribeSubject">
+              <Name>CSV</Name>
+            </Expression>
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="rx:Zip" />
+            </Expression>
+            <Expression xsi:type="Add" />
+            <Expression xsi:type="Format" />
+            <Expression xsi:type="Combinator">
+              <Combinator xsi:type="io:GetFullPath" />
+            </Expression>
+            <Expression xsi:type="rx:ReplaySubject">
+              <Name>PeakDetectionFilename</Name>
               <rx:BufferSize xsi:nil="true" />
             </Expression>
             <Expression xsi:type="SubscribeSubject">
@@ -1285,11 +1369,25 @@ def generate():
             <Edge From="75" To="76" Label="Source1" />
             <Edge From="76" To="77" Label="Source1" />
             <Edge From="77" To="78" Label="Source1" />
-            <Edge From="79" To="80" Label="Source1" />
-            <Edge From="81" To="82" Label="Source1" />
+            <Edge From="79" To="82" Label="Source1" />
+            <Edge From="80" To="82" Label="Source2" />
+            <Edge From="81" To="82" Label="Source3" />
+            <Edge From="82" To="83" Label="Source1" />
             <Edge From="83" To="84" Label="Source1" />
+            <Edge From="84" To="85" Label="Source1" />
             <Edge From="85" To="86" Label="Source1" />
-            <Edge From="87" To="88" Label="Source1" />
+            <Edge From="87" To="90" Label="Source1" />
+            <Edge From="88" To="90" Label="Source2" />
+            <Edge From="89" To="90" Label="Source3" />
+            <Edge From="90" To="91" Label="Source1" />
+            <Edge From="91" To="92" Label="Source1" />
+            <Edge From="92" To="93" Label="Source1" />
+            <Edge From="93" To="94" Label="Source1" />
+            <Edge From="95" To="96" Label="Source1" />
+            <Edge From="97" To="98" Label="Source1" />
+            <Edge From="99" To="100" Label="Source1" />
+            <Edge From="101" To="102" Label="Source1" />
+            <Edge From="103" To="104" Label="Source1" />
           </Edges>
         </Workflow>
       </Expression>
@@ -1298,7 +1396,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>072726</Value>
+          <Value>073126</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1322,7 +1420,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>1poketest</Value>
+          <Value>0021</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1334,7 +1432,7 @@ def generate():
       </Expression>
       <Expression xsi:type="Combinator">
         <Combinator xsi:type="StringProperty">
-          <Value>h1</Value>
+          <Value>t1a</Value>
         </Combinator>
       </Expression>
       <Expression xsi:type="rx:ReplaySubject">
@@ -1433,70 +1531,71 @@ def generate():
       <Edge From="30" To="33" Label="Source1" />
       <Edge From="31" To="33" Label="Source2" />
       <Edge From="32" To="33" Label="Source3" />
-      <Edge From="33" To="51" Label="Source1" />
+      <Edge From="33" To="48" Label="Source1" />
       <Edge From="34" To="35" Label="Source1" />
       <Edge From="35" To="36" Label="Source1" />
       <Edge From="36" To="37" Label="Source1" />
-      <Edge From="37" To="50" Label="Source1" />
+      <Edge From="37" To="47" Label="Source1" />
       <Edge From="38" To="39" Label="Source1" />
       <Edge From="39" To="40" Label="Source1" />
-      <Edge From="40" To="50" Label="Source2" />
+      <Edge From="40" To="47" Label="Source2" />
       <Edge From="41" To="42" Label="Source1" />
       <Edge From="42" To="43" Label="Source1" />
       <Edge From="43" To="44" Label="Source1" />
+      <Edge From="43" To="65" Label="Source1" />
       <Edge From="44" To="45" Label="Source1" />
-      <Edge From="45" To="50" Label="Source3" />
-      <Edge From="46" To="47" Label="Source1" />
-      <Edge From="47" To="48" Label="Source1" />
+      <Edge From="44" To="62" Label="Source1" />
+      <Edge From="45" To="46" Label="Source1" />
+      <Edge From="46" To="47" Label="Source3" />
+      <Edge From="47" To="48" Label="Source2" />
       <Edge From="48" To="49" Label="Source1" />
-      <Edge From="49" To="50" Label="Source4" />
-      <Edge From="50" To="51" Label="Source2" />
+      <Edge From="49" To="50" Label="Source1" />
+      <Edge From="49" To="51" Label="Source1" />
+      <Edge From="49" To="53" Label="Source1" />
+      <Edge From="49" To="54" Label="Source1" />
+      <Edge From="49" To="55" Label="Source1" />
+      <Edge From="49" To="56" Label="Source6" />
+      <Edge From="49" To="66" Label="Source1" />
+      <Edge From="49" To="68" Label="Source1" />
+      <Edge From="49" To="71" Label="Source1" />
+      <Edge From="49" To="73" Label="Source1" />
+      <Edge From="49" To="75" Label="Source1" />
+      <Edge From="49" To="77" Label="Source1" />
+      <Edge From="49" To="78" Label="Source1" />
+      <Edge From="50" To="56" Label="Source1" />
+      <Edge From="50" To="79" Label="Source3" />
       <Edge From="51" To="52" Label="Source1" />
-      <Edge From="52" To="53" Label="Source1" />
-      <Edge From="52" To="54" Label="Source1" />
-      <Edge From="52" To="56" Label="Source1" />
-      <Edge From="52" To="57" Label="Source1" />
-      <Edge From="52" To="58" Label="Source1" />
-      <Edge From="52" To="59" Label="Source6" />
-      <Edge From="52" To="63" Label="Source1" />
-      <Edge From="52" To="65" Label="Source1" />
-      <Edge From="52" To="68" Label="Source1" />
-      <Edge From="52" To="70" Label="Source1" />
-      <Edge From="52" To="72" Label="Source1" />
-      <Edge From="52" To="74" Label="Source1" />
-      <Edge From="52" To="75" Label="Source1" />
-      <Edge From="53" To="59" Label="Source1" />
-      <Edge From="53" To="76" Label="Source3" />
-      <Edge From="54" To="55" Label="Source1" />
-      <Edge From="55" To="59" Label="Source2" />
-      <Edge From="56" To="59" Label="Source3" />
-      <Edge From="57" To="59" Label="Source4" />
-      <Edge From="58" To="59" Label="Source5" />
-      <Edge From="59" To="62" Label="Source1" />
+      <Edge From="52" To="56" Label="Source2" />
+      <Edge From="53" To="56" Label="Source3" />
+      <Edge From="54" To="56" Label="Source4" />
+      <Edge From="55" To="56" Label="Source5" />
+      <Edge From="56" To="59" Label="Source1" />
+      <Edge From="57" To="58" Label="Source1" />
+      <Edge From="58" To="59" Label="Source2" />
       <Edge From="60" To="61" Label="Source1" />
       <Edge From="61" To="62" Label="Source2" />
       <Edge From="63" To="64" Label="Source1" />
-      <Edge From="63" To="81" Label="Source1" />
-      <Edge From="65" To="66" Label="Source1" />
-      <Edge From="65" To="67" Label="Source1" />
-      <Edge From="65" To="81" Label="Source2" />
+      <Edge From="64" To="65" Label="Source2" />
+      <Edge From="66" To="67" Label="Source1" />
+      <Edge From="66" To="84" Label="Source1" />
       <Edge From="68" To="69" Label="Source1" />
-      <Edge From="68" To="81" Label="Source3" />
-      <Edge From="70" To="71" Label="Source1" />
-      <Edge From="70" To="81" Label="Source4" />
-      <Edge From="72" To="73" Label="Source1" />
-      <Edge From="72" To="81" Label="Source5" />
-      <Edge From="74" To="76" Label="Source1" />
-      <Edge From="75" To="76" Label="Source2" />
-      <Edge From="76" To="77" Label="Source1" />
-      <Edge From="77" To="80" Label="Source1" />
-      <Edge From="78" To="79" Label="Source1" />
-      <Edge From="79" To="80" Label="Source2" />
-      <Edge From="81" To="84" Label="Source1" />
-      <Edge From="82" To="83" Label="Source1" />
-      <Edge From="83" To="84" Label="Source2" />
-      <Edge From="86" To="87" Label="Source1" />
-      <Edge From="87" To="88" Label="Source1" />
+      <Edge From="68" To="70" Label="Source1" />
+      <Edge From="68" To="84" Label="Source2" />
+      <Edge From="71" To="72" Label="Source1" />
+      <Edge From="71" To="84" Label="Source3" />
+      <Edge From="73" To="74" Label="Source1" />
+      <Edge From="73" To="84" Label="Source4" />
+      <Edge From="75" To="76" Label="Source1" />
+      <Edge From="75" To="84" Label="Source5" />
+      <Edge From="77" To="79" Label="Source1" />
+      <Edge From="78" To="79" Label="Source2" />
+      <Edge From="79" To="80" Label="Source1" />
+      <Edge From="80" To="83" Label="Source1" />
+      <Edge From="81" To="82" Label="Source1" />
+      <Edge From="82" To="83" Label="Source2" />
+      <Edge From="84" To="87" Label="Source1" />
+      <Edge From="85" To="86" Label="Source1" />
+      <Edge From="86" To="87" Label="Source2" />
       <Edge From="89" To="90" Label="Source1" />
       <Edge From="90" To="91" Label="Source1" />
       <Edge From="92" To="93" Label="Source1" />
@@ -1506,16 +1605,18 @@ def generate():
       <Edge From="98" To="99" Label="Source1" />
       <Edge From="99" To="100" Label="Source1" />
       <Edge From="101" To="102" Label="Source1" />
-      <Edge From="102" To="110" Label="Source1" />
-      <Edge From="103" To="110" Label="Source2" />
-      <Edge From="104" To="110" Label="Source3" />
-      <Edge From="105" To="110" Label="Source4" />
-      <Edge From="106" To="110" Label="Source5" />
-      <Edge From="107" To="110" Label="Source6" />
-      <Edge From="108" To="110" Label="Source7" />
-      <Edge From="109" To="110" Label="Source8" />
-      <Edge From="110" To="111" Label="Source1" />
-      <Edge From="111" To="112" Label="Source1" />
+      <Edge From="102" To="103" Label="Source1" />
+      <Edge From="104" To="105" Label="Source1" />
+      <Edge From="105" To="113" Label="Source1" />
+      <Edge From="106" To="113" Label="Source2" />
+      <Edge From="107" To="113" Label="Source3" />
+      <Edge From="108" To="113" Label="Source4" />
+      <Edge From="109" To="113" Label="Source5" />
+      <Edge From="110" To="113" Label="Source6" />
+      <Edge From="111" To="113" Label="Source7" />
+      <Edge From="112" To="113" Label="Source8" />
+      <Edge From="113" To="114" Label="Source1" />
+      <Edge From="114" To="115" Label="Source1" />
     </Edges>
   </Workflow>
 </WorkflowBuilder>
